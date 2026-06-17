@@ -1,1032 +1,222 @@
-<!DOCTYPE html>
-<html lang="tr">
+<!doctype html>
+<html lang="tr" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Onkositik Böbrek Tümörleri – Patolog Algoritması</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onkositik Böbrek Tümörleri – Mahmut Akgül Yaklaşımı</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap');
-
-  :root {
-    --bg: #0f1117;
-    --surface: #181c27;
-    --surface2: #1e2336;
-    --border: #2a3050;
-    --border2: #3a4268;
-    --text: #e8eaf2;
-    --muted: #7a84a0;
-    --accent: #4f7fff;
-    --accent-dim: rgba(79,127,255,0.15);
-    --teal: #2dd4bf;
-    --teal-dim: rgba(45,212,191,0.12);
-    --amber: #fbbf24;
-    --amber-dim: rgba(251,191,36,0.12);
-    --red: #f87171;
-    --red-dim: rgba(248,113,113,0.12);
-    --green: #34d399;
-    --green-dim: rgba(52,211,153,0.12);
-    --purple: #a78bfa;
-    --purple-dim: rgba(167,139,250,0.12);
-    --radius: 14px;
-    --radius-sm: 8px;
-    --mono: 'IBM Plex Mono', monospace;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    background: linear-gradient(160deg, #0d1230 0%, #111827 50%, #0d2433 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 28px 20px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(79,127,255,0.18) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .header-inner { max-width: 900px; margin: 0 auto; position: relative; }
-  .header-eyebrow {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--teal);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .header-eyebrow::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--teal); }
-  h1 {
-    font-size: clamp(1.4rem, 4vw, 2.2rem);
-    font-weight: 800;
-    line-height: 1.15;
-    color: #fff;
-    margin-bottom: 10px;
-  }
-  .header-sub {
-    font-size: 0.88rem;
-    color: var(--muted);
-    max-width: 620px;
-    line-height: 1.55;
-  }
-  .header-meta {
-    margin-top: 14px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-  .chip {
-    font-size: 0.72rem;
-    font-family: var(--mono);
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  /* ── BOTTOM NAV (mobile tabs) ── */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(15,17,23,0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .bnav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 4px 8px;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    font-size: 0.62rem;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    gap: 4px;
-    transition: color 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .bnav-item.active { color: var(--accent); }
-  .bnav-icon { font-size: 1.15rem; line-height: 1; }
-
-  /* ── TOP NAV (desktop) ── */
-  .top-nav {
-    display: none;
-    position: sticky;
-    top: 0;
-    background: rgba(15,17,23,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    z-index: 50;
-  }
-  .top-nav-inner {
-    max-width: 900px;
-    margin: 0 auto;
-    display: flex;
-    gap: 4px;
-    padding: 10px 20px;
-    overflow-x: auto;
-  }
-  .top-nav-btn {
-    font-size: 0.82rem;
-    font-weight: 500;
-    padding: 7px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    white-space: nowrap;
-    font-family: 'Inter', sans-serif;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .top-nav-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .top-nav-btn.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-
-  @media (min-width: 700px) {
-    .bottom-nav { display: none; }
-    .top-nav { display: block; }
-  }
-
-  /* ── MAIN CONTENT ── */
-  .main {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px 16px 100px;
-  }
-  @media (min-width: 700px) {
-    .main { padding: 28px 24px 60px; }
-  }
-
-  /* ── SECTION ── */
-  .section { display: none; }
-  .section.visible { display: block; }
-
-  /* ── CARD ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px;
-    margin-bottom: 14px;
-  }
-  @media (min-width: 700px) {
-    .card { padding: 22px; }
-  }
-  .card-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .card-title .icon { font-size: 1.2rem; }
-
-  /* ── CALLOUT ── */
-  .callout {
-    border-radius: var(--radius-sm);
-    padding: 13px 15px;
-    font-size: 0.88rem;
-    line-height: 1.55;
-    margin: 12px 0;
-    border: 1px solid;
-  }
-  .callout.info { background: var(--accent-dim); border-color: rgba(79,127,255,0.3); }
-  .callout.warn { background: var(--amber-dim); border-color: rgba(251,191,36,0.3); color: var(--amber); }
-  .callout.danger { background: var(--red-dim); border-color: rgba(248,113,113,0.3); color: var(--red); }
-  .callout.ok { background: var(--green-dim); border-color: rgba(52,211,153,0.3); color: var(--green); }
-
-  /* ── BADGES ── */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 9px;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-    margin: 3px;
-    border: 1px solid;
-  }
-  .badge.default { background: var(--accent-dim); border-color: rgba(79,127,255,0.3); color: var(--accent); }
-  .badge.ok { background: var(--green-dim); border-color: rgba(52,211,153,0.3); color: var(--green); }
-  .badge.warn { background: var(--amber-dim); border-color: rgba(251,191,36,0.3); color: var(--amber); }
-  .badge.danger { background: var(--red-dim); border-color: rgba(248,113,113,0.3); color: var(--red); }
-  .badge.teal { background: var(--teal-dim); border-color: rgba(45,212,191,0.3); color: var(--teal); }
-  .badge.purple { background: var(--purple-dim); border-color: rgba(167,139,250,0.3); color: var(--purple); }
-
-  /* ── ALGORITHM STEP ── */
-  .algo-step {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    margin-bottom: 10px;
-  }
-  .algo-step-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    cursor: pointer;
-    background: var(--surface2);
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-  .algo-step-header:active { background: var(--border); }
-  .step-num {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    background: var(--accent-dim);
-    border: 1px solid rgba(79,127,255,0.35);
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    font-family: var(--mono);
-  }
-  .algo-step-title { flex: 1; font-weight: 600; font-size: 0.92rem; }
-  .algo-chevron {
-    color: var(--muted);
-    font-size: 0.8rem;
-    transition: transform 0.2s;
-  }
-  .algo-chevron.open { transform: rotate(180deg); }
-  .algo-body {
-    padding: 16px;
-    font-size: 0.88rem;
-    line-height: 1.6;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .algo-body strong, .algo-body b { color: var(--text); }
-
-  /* ── FLOW NODES ── */
-  .flow { display: flex; flex-direction: column; gap: 0; }
-  .flow-node {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-size: 0.86rem;
-  }
-  .flow-node strong { color: var(--teal); display: block; margin-bottom: 4px; }
-  .flow-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--border2);
-    font-size: 1.2rem;
-    padding: 2px 0;
-  }
-
-  /* ── FILTER BAR ── */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-  }
-  .filter-input {
-    flex: 1;
-    min-width: 180px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    padding: 10px 13px;
-    font-size: 0.88rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    -webkit-appearance: none;
-  }
-  .filter-input:focus { border-color: var(--accent); }
-  .filter-input::placeholder { color: var(--muted); }
-  .filter-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text);
-    padding: 10px 13px;
-    font-size: 0.88rem;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    cursor: pointer;
-    -webkit-appearance: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a84a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 32px;
-  }
-  .filter-select:focus { border-color: var(--accent); }
-
-  /* ── TABLE (mobile scroll) ── */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-  table { width: 100%; border-collapse: collapse; font-size: 0.83rem; min-width: 540px; }
-  th {
-    background: var(--surface2);
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 11px 13px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  td {
-    padding: 12px 13px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-    line-height: 1.55;
-    color: var(--muted);
-  }
-  td:first-child { color: var(--text); font-weight: 600; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-
-  /* ── TUMOR CARD (mobile alt) ── */
-  .tumor-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 15px;
-    margin-bottom: 10px;
-  }
-  .tumor-name {
-    font-weight: 700;
-    color: var(--text);
-    font-size: 0.95rem;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .tumor-row { margin-bottom: 8px; }
-  .tumor-row-label {
-    font-size: 0.68rem;
-    font-family: var(--mono);
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 3px;
-  }
-  .tumor-row-val { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
-  .tumor-row-val strong { color: var(--text); }
-
-  /* ── IHK CARD ── */
-  .ihk-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px 15px;
-    margin-bottom: 10px;
-  }
-  .ihk-marker {
-    font-family: var(--mono);
-    font-weight: 600;
-    color: var(--teal);
-    font-size: 0.9rem;
-    margin-bottom: 6px;
-  }
-  .ihk-row { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
-  .ihk-row strong { color: var(--text); }
-
-  /* ── PILLROW ── */
-  .pillrow { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-
-  /* ── SOURCES ── */
-  .source-item {
-    display: flex;
-    gap: 12px;
-    padding: 13px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.84rem;
-    line-height: 1.55;
-  }
-  .source-item:last-child { border-bottom: none; }
-  .source-num {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--accent);
-    min-width: 22px;
-    padding-top: 2px;
-  }
-  .source-text { color: var(--muted); }
-
-  /* ── GRID ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  @media (min-width: 640px) {
-    .grid-2 { grid-template-columns: 1fr 1fr; }
-  }
-
-  /* ── SUMMARY HERO ── */
-  .stat-row { display: flex; gap: 10px; margin: 14px 0; }
-  .stat-box {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-    text-align: center;
-  }
-  .stat-num {
-    font-size: 1.9rem;
-    font-weight: 800;
-    color: var(--accent);
-    font-family: var(--mono);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-  .stat-label { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
-
-  /* ── EXPAND BUTTONS ── */
-  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .btn {
-    padding: 8px 14px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-size: 0.82rem;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .btn:hover, .btn:active { border-color: var(--accent); color: var(--accent); }
-  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
-  .btn.primary:hover { opacity: 0.88; }
-
-  /* ── SCENARIO PILLS ── */
-  .scenario-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-  .scenario-pill {
-    padding: 7px 13px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    font-weight: 500;
-    -webkit-tap-highlight-color: transparent;
-    transition: all 0.15s;
-  }
-  .scenario-pill.active { background: var(--accent-dim); border-color: rgba(79,127,255,0.4); color: var(--accent); }
-
-  p { margin-bottom: 10px; font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
-  p strong, p b { color: var(--text); }
-  ul { padding-left: 18px; margin-bottom: 10px; }
-  li { font-size: 0.87rem; color: var(--muted); margin-bottom: 6px; line-height: 1.55; }
-  li strong, li b { color: var(--text); }
-  hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-
-  .section-title {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 4px;
-  }
-  .section-sub {
-    font-size: 0.83rem;
-    color: var(--muted);
-    margin-bottom: 18px;
-  }
-
-  /* scroll hint for table */
-  .scroll-hint {
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-align: right;
-    margin-bottom: 6px;
-    font-family: var(--mono);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-  }
-  @media (min-width: 700px) { .scroll-hint { display: none; } }
+:root{
+  color-scheme: dark;
+  --bg:#0f1117;--bg2:#111827;--surface:#181c27;--surface2:#202638;--surface3:#101522;
+  --text:#e8eaf2;--muted:#9aa4bc;--line:#303753;--line2:#445071;
+  --accent:#6d8cff;--accent2:#2dd4bf;--warn:#fbbf24;--danger:#fb7185;--ok:#34d399;--purple:#c084fc;
+  --shadow:0 18px 55px rgba(0,0,0,.32);--radius:18px;--radius-sm:12px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+html[data-theme="light"]{
+  color-scheme: light;
+  --bg:#f6f8fc;--bg2:#ffffff;--surface:#ffffff;--surface2:#f0f4fb;--surface3:#eaf0fb;
+  --text:#162033;--muted:#5b667a;--line:#d8deec;--line2:#c1ccdf;
+  --accent:#3657d8;--accent2:#0f9488;--warn:#b45309;--danger:#be123c;--ok:#047857;--purple:#7c3aed;
+  --shadow:0 14px 40px rgba(31,41,55,.10);
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at top right,rgba(109,140,255,.16),transparent 34%),var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:inherit}.wrap{max-width:1160px;margin:0 auto;padding:0 18px}
+.hero{background:linear-gradient(135deg,#111827,#1c275f 52%,#0b635c);color:white;border-bottom:1px solid rgba(255,255,255,.12);position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle at 12% 20%,rgba(255,255,255,.12),transparent 18%),radial-gradient(circle at 85% 16%,rgba(45,212,191,.18),transparent 23%);pointer-events:none}
+.hero .wrap{position:relative;padding-top:34px;padding-bottom:28px}.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#9ff8e9;margin-bottom:10px;display:flex;gap:9px;align-items:center}.eyebrow:before{content:"";width:28px;height:1px;background:#9ff8e9}.hero h1{margin:0 0 12px;font-size:clamp(1.65rem,4vw,3.15rem);line-height:1.08;letter-spacing:-.035em}.subtitle{max-width:900px;font-size:clamp(.95rem,1.8vw,1.08rem);opacity:.9}.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);border-radius:999px;padding:5px 10px;font-family:var(--mono);font-size:.74rem;color:#e8efff}
+.toolbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg2) 92%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.toolbar .wrap{display:flex;gap:10px;align-items:center;padding-top:10px;padding-bottom:10px}.nav{display:flex;gap:7px;overflow:auto;flex:1;scrollbar-width:thin}.nav a,.themebtn{white-space:nowrap;border:1px solid var(--line);background:var(--surface);color:var(--muted);text-decoration:none;border-radius:999px;padding:8px 12px;font-size:.84rem;font-weight:650;cursor:pointer}.nav a:hover,.themebtn:hover{border-color:var(--accent);color:var(--accent)}.themebtn{display:flex;align-items:center;gap:8px;color:var(--text)}
+main{padding:24px 0 72px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-7{grid-column:span 7}.col-6{grid-column:span 6}.col-5{grid-column:span 5}.col-4{grid-column:span 4}.col-3{grid-column:span 3}@media(max-width:860px){.col-8,.col-7,.col-6,.col-5,.col-4,.col-3{grid-column:span 12}.toolbar .wrap{align-items:stretch}.themebtn{padding:8px 10px}.nav a{font-size:.78rem}}
+section{scroll-margin-top:86px;margin-bottom:18px}.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}.card.flat{box-shadow:none}.card-title{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:1.22rem;line-height:1.25;color:var(--text)}.card-title .icon{font-size:1.35rem}.section-head{margin:26px 0 12px}.section-head h2{font-size:1.45rem;margin:0 0 4px;letter-spacing:-.02em}.section-head p{margin:0;color:var(--muted);font-size:.92rem}p{margin:0 0 10px;color:var(--muted)}b,strong{color:var(--text)}ul,ol{margin:10px 0 0 18px;padding:0}li{color:var(--muted);margin:6px 0}.callout{border:1px solid color-mix(in srgb,var(--accent) 32%,var(--line));background:color-mix(in srgb,var(--accent) 13%,var(--surface));border-radius:var(--radius-sm);padding:13px 15px;margin:12px 0;color:var(--muted)}.callout.warn{border-color:color-mix(in srgb,var(--warn) 38%,var(--line));background:color-mix(in srgb,var(--warn) 14%,var(--surface))}.callout.danger{border-color:color-mix(in srgb,var(--danger) 38%,var(--line));background:color-mix(in srgb,var(--danger) 13%,var(--surface))}.callout.ok{border-color:color-mix(in srgb,var(--ok) 38%,var(--line));background:color-mix(in srgb,var(--ok) 13%,var(--surface))}
+.badge{display:inline-flex;align-items:center;gap:5px;border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));background:color-mix(in srgb,var(--accent) 13%,var(--surface));color:var(--accent);border-radius:999px;padding:4px 9px;font-weight:750;font-size:.75rem;margin:2px}.badge.ok{border-color:color-mix(in srgb,var(--ok) 35%,var(--line));background:color-mix(in srgb,var(--ok) 13%,var(--surface));color:var(--ok)}.badge.warn{border-color:color-mix(in srgb,var(--warn) 35%,var(--line));background:color-mix(in srgb,var(--warn) 13%,var(--surface));color:var(--warn)}.badge.danger{border-color:color-mix(in srgb,var(--danger) 35%,var(--line));background:color-mix(in srgb,var(--danger) 13%,var(--surface));color:var(--danger)}.badge.teal{border-color:color-mix(in srgb,var(--accent2) 35%,var(--line));background:color-mix(in srgb,var(--accent2) 12%,var(--surface));color:var(--accent2)}
+.kpirow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.kpi{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:14px}.kpi .num{font-family:var(--mono);font-size:1.9rem;font-weight:900;color:var(--accent);line-height:1}.kpi .label{font-size:.78rem;color:var(--muted);margin-top:6px}@media(max-width:620px){.kpirow{grid-template-columns:1fr}}
+.flow{display:flex;flex-direction:column;gap:10px}.node{border:1px solid var(--line);background:var(--surface2);border-radius:15px;padding:14px;position:relative}.node h3{margin:0 0 6px;font-size:1rem}.node .decision{color:var(--accent2);font-weight:850}.arrow{color:var(--muted);font-size:1.25rem;padding-left:18px;margin:-2px 0}.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.split{grid-template-columns:1fr}}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}input,select,button{font:inherit}input,select{background:var(--surface2);border:1px solid var(--line);border-radius:12px;color:var(--text);padding:10px 12px;min-width:220px;outline:none}input:focus,select:focus{border-color:var(--accent)}button{border:1px solid var(--line);background:var(--accent);color:white;border-radius:12px;padding:10px 13px;cursor:pointer;font-weight:750}button.secondary{background:var(--surface2);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}button.ghost{background:transparent;color:var(--muted)}
+details{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:var(--surface);margin:10px 0}summary{list-style:none;cursor:pointer;background:var(--surface2);padding:14px 16px;font-weight:850;display:flex;align-items:center;gap:10px}summary::-webkit-details-marker{display:none}summary:after{content:"⌄";margin-left:auto;color:var(--muted);transition:transform .18s}details[open] summary:after{transform:rotate(180deg)}details .content{padding:15px 16px}.hidden{display:none!important}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-top:12px}table{border-collapse:collapse;width:100%;min-width:760px;font-size:.86rem}th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:10px 11px;vertical-align:top;color:var(--muted)}td:first-child{color:var(--text);font-weight:800}th{background:var(--surface2);color:var(--text);text-align:left;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;position:sticky;top:0;z-index:2}tr:last-child td{border-bottom:0}tr:hover td{background:color-mix(in srgb,var(--accent) 5%,transparent)}.scrollhint{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:right;margin-bottom:6px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.tabbtn{background:var(--surface2);border-color:var(--line);color:var(--muted);padding:8px 12px;border-radius:999px}.tabbtn.active{background:color-mix(in srgb,var(--accent) 18%,var(--surface));border-color:var(--accent);color:var(--accent)}.tabpane{display:none}.tabpane.active{display:block}.abbr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(max-width:720px){.abbr-grid{grid-template-columns:1fr}}.abbr{border:1px solid var(--line);background:var(--surface2);border-radius:14px;padding:12px}.abbr code{font-family:var(--mono);font-weight:900;color:var(--accent2);font-size:.95rem}.abbr span{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}.compact-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(max-width:720px){.compact-list{grid-template-columns:1fr}}.mini{border:1px solid var(--line);background:var(--surface2);border-radius:13px;padding:11px}.mini b{display:block;margin-bottom:4px}.footer{color:var(--muted);font-size:.82rem;text-align:center;padding:18px 0 34px}.print-note{display:none}@media print{.toolbar,.controls,.themebtn,button{display:none!important}body{background:white}.card{box-shadow:none;break-inside:avoid}.hero{color:#111;background:white;border-bottom:2px solid #111}.subtitle,.meta,.eyebrow{color:#333}.print-note{display:block}.tabpane{display:block}.tabs{display:none}th{position:static}}
 </style>
 </head>
 <body>
-<div id="root"></div>
-
-<script type="text/babel">
-const { useState, useMemo } = React;
-
-/* ─── DATA ─────────────────────────────────────────────── */
-const ALGO_STEPS = [
-  {
-    id: 1,
-    title: "Renal epitelyal onkositik neoplazi mi?",
-    tags: ["all"],
-    content: (
-      <>
-        <p><b>PAX8</b> renal epitelyal kökeni destekler. PAX8 negatif, melanotik marker belirgin pozitif ise PEComa/epiteloid AML düşün.</p>
-        <p>PAX8 pozitif + Melan A/HMB45/Cathepsin K pozitifliği ise özellikle <b>TFEB-altered RCC</b> veya MiT ailesi açısından uyarıcıdır.</p>
-      </>
-    )
-  },
-  {
-    id: 2,
-    title: "CK7/CD117 ekseni ile ilk ayrım",
-    tags: ["all", "ck7cd117"],
-    content: (
-      <div className="flow">
-        <div className="flow-node"><strong>CK7⁻/seyrek · CD117⁺⁺</strong>En çok <b>renal onkositom</b>. Morfoloji: iyi sınırlı, yuva/tübül, granüler eozinofilik sitoplazma, bland nükleus, skar olabilir.</div>
-        <div className="flow-arrow">↓</div>
-        <div className="flow-node"><strong>CK7⁺⁺ · CD117⁺⁺</strong><b>Chromophobe RCC</b> lehine. Morfoloji: belirgin membran, raisinoid nükleus, perinükleer halo.</div>
-        <div className="flow-arrow">↓</div>
-        <div className="flow-node"><strong>CK7⁺⁺ · CD117⁻</strong><b>LOT</b> lehine. GATA3/L1CAM destekleyebilir; morfoloji ile uyum şarttır.</div>
-        <div className="flow-arrow">↓</div>
-        <div className="flow-node"><strong>CK7⁻/seyrek · CD117⁺ · büyük vakuoller · Cathepsin K⁺</strong><b>EVT</b> düşün.</div>
-      </div>
-    )
-  },
-  {
-    id: 3,
-    title: "Metabolik ve herediter alarm işaretleri",
-    tags: ["all", "metabolic"],
-    content: (
-      <>
-        <p>Genç yaş, multifokalite/bilaterallik, aile öyküsü, paraganglioma/pheokromositoma, uterin/kutanöz leiomyom, pnömotoraks/akciğer kistleri, alışılmadık morfoloji veya agresif davranış varsa metabolik/herediter paneli erken çalış.</p>
-        <ul>
-          <li><b>SDHB kaybı:</b> SDH-deficient RCC için güçlü bulgu.</li>
-          <li><b>FH kaybı ve/veya 2SC pozitifliği:</b> FH-deficient RCC lehine; FH korunması tanıyı dışlamaz.</li>
-          <li><b>HOCT / bilateral multifokal:</b> FLCN / Birt-Hogg-Dubé sendromu açısından değerlendir.</li>
-        </ul>
-      </>
-    )
-  },
-  {
-    id: 4,
-    title: "TFE3/TFEB-altered RCC ne zaman düşünülür?",
-    tags: ["all", "mit"],
-    content: (
-      <>
-        <p>Heterojen papiller/solid/eozinofilik/berrak morfoloji, psammoma cisimleri, Cathepsin K veya melanotik marker pozitifliği, PAX8 ile birlikte Melan A/HMB45 pozitifliği varsa MiT ailesi düşünülmelidir.</p>
-        <div className="callout warn"><b>⚠ Uyarı:</b> TFE3/TFEB IHK performansı değişkendir. Kuvvetli şüphede FISH veya RNA-temelli füzyon analizi gerekir.</div>
-      </>
-    )
-  },
-  {
-    id: 5,
-    title: "Biyopsi materyalinde raporlama",
-    tags: ["all", "biopsy"],
-    content: (
-      <>
-        <p>İğne biyopsisinde kesin "onkositom" tanısı dikkatli kullanılmalıdır. Sınırlı materyalde temkinli ifadeler uygundur:</p>
-        <div className="callout info">"Low-grade oncocytic renal neoplasm, oncocytic renal neoplasm, favor …" veya "morphology and IHC favor …; excision/correlation recommended"</div>
-      </>
-    )
-  },
-];
-
-const TUMORS = [
-  { name: "Renal onkositom", badge: "ok", tag: "distal",
-    morfoloji: "İyi sınırlı, yuva/tübül, yoğun granüler eozinofilik sitoplazma, uniform bland nükleus; skar olabilir.",
-    ihk: "PAX8⁺, CD117 diffüz⁺, CK7 negatif/seyrek.",
-    mol: "Benign; mtDNA/kompleks I kusuru, 11q13/CCND1 veya kromozom 1/Y kaybı bildirilebilir." },
-  { name: "Chromophobe RCC", badge: "warn", tag: "distal",
-    morfoloji: "Belirgin hücre membranı, raisinoid nükleus, perinükleer halo; klasik/eozinofilik varyant.",
-    ihk: "CK7 diffüz⁺, CD117 diffüz⁺, PAX8⁺, CAIX genelde negatif.",
-    mol: "Çoklu kromozom kayıpları; TP53/PTEN/TERT ilişkili; çoğu iyi prognozlu, dediferansiyasyon önemli." },
-  { name: "LOT", badge: "ok", tag: "mtor",
-    morfoloji: "Solid/trabeküler/tübüler, monomorfik düşük dereceli onkositik hücreler; ödemli stroma ve kapiller ağ.",
-    ihk: "CK7 diffüz güçlü⁺, CD117⁻, GATA3⁺, L1CAM⁺, PAX8⁺.",
-    mol: "MTOR/TSC1/TSC2 yolak değişiklikleri; mevcut serilerde indolent." },
-  { name: "EVT", badge: "ok", tag: "mtor",
-    morfoloji: "Nested/solid, büyük intrastoplazmik vakuoller, belirgin nükleol; iyi sınırlı.",
-    ihk: "Cathepsin K⁺, CD117⁺, CD10⁺, PAX8⁺, CK7 seyrek.",
-    mol: "TSC1/TSC2/MTOR mutasyonları; çoğu indolent." },
-  { name: "ESC RCC", badge: "warn", tag: "mtor",
-    morfoloji: "Solid-kistik mimari, hobnail döşeli kistler, kaba bazofilik sitoplazmik stippling.",
-    ihk: "CK20 patchy/diffüz⁺, CK7 negatif/zayıf, PAX8⁺, Cathepsin K sık fokal⁺.",
-    mol: "TSC1/TSC2 değişiklikleri; genelde düşük evre ama metastatik potansiyel bildirilmiştir." },
-  { name: "HOCT", badge: "warn", tag: "distal",
-    morfoloji: "Onkositom ve chRCC arasında hibrit/checkerboard görünüm; multifokal/bilateral olabilir.",
-    ihk: "CK7/CD117 değişken karışık patern.",
-    mol: "FLCN/Birt-Hogg-Dubé ilişkisi; sendromik değerlendirme önemli." },
-  { name: "SDH-deficient RCC", badge: "danger", tag: "metabolic",
-    morfoloji: "Monomorfik onkositik hücreler, mikrokistler, vakuoller/flokkülent inklüzyonlar, mast hücreleri.",
-    ihk: "SDHB kaybı, PAX8⁺, KIT çoğu kez negatif, CK7 nadir/fokal.",
-    mol: "SDHx (özellikle SDHB); germline ilişki ve metastaz potansiyeli." },
-  { name: "FH-deficient RCC", badge: "danger", tag: "metabolic",
-    morfoloji: "Geniş spektrum; solid/papiller/kribriform/tübüler veya onkositik alanlar; inclusion-benzeri nükleol ve perinükleoler halo.",
-    ihk: "FH kaybı ve/veya 2SC⁺, PAX8⁺, SDHB korunur.",
-    mol: "FH inaktivasyonu; HLRCC/germline olasılığı; agresif klinik grup." },
-  { name: "TFE3-rearranged RCC", badge: "danger", tag: "mit",
-    morfoloji: "Geniş morfolojik spektrum; berrak/eozinofilik hücreler, papiller yapı, psammoma cisimleri olabilir.",
-    ihk: "TFE3 nükleer⁺, PAX8⁺, Cathepsin K bazı olgularda⁺.",
-    mol: "Xp11.2/TFE3 füzyonları; FISH/RNA-seq tanısal." },
-  { name: "TFEB-altered RCC", badge: "danger", tag: "mit",
-    morfoloji: "Biphasic/rozet benzeri klasik patern veya amplifiye grupta yüksek dereceli heterojen görünüm.",
-    ihk: "PAX8⁺, Melan A/HMB45/Cathepsin K sık, CK7 çoğu kez negatif.",
-    mol: "TFEB rearrangement veya 6p21 amplifikasyonu; amplifiye grup daha agresif olabilir." },
-];
-
-const IHK = [
-  { marker: "CK7", group: "distal", patern: "Onkositomda negatif/seyrek; chRCC ve LOT'ta diffüz; ESC RCC'de negatif/zayıf; EVT'de seyrek.", yorum: "CK7 diffüz⁺/CD117⁻ → LOT lehine; CK7 diffüz⁺/CD117⁺ → chRCC lehine." },
-  { marker: "CD117 / KIT", group: "distal", patern: "Onkositom ve chRCC'de diffüz; LOT'ta negatif; EVT'de sık pozitif; SDH-deficient RCC'de tipik negatif.", yorum: "CK7 ile birlikte yorumlanmalı." },
-  { marker: "PAX8", group: "distal", patern: "Çoğu renal epitelyal tümörde pozitif.", yorum: "Renal kökeni destekler; PEComa ayrımında önemlidir." },
-  { marker: "CAIX", group: "distal", patern: "Onkositik spektrumda genellikle negatif; ccRCC'de güçlü box-like membranöz.", yorum: "Berrak/eozinofilik mimiklerde ccRCC dışlama." },
-  { marker: "GATA3", group: "mtor", patern: "LOT'ta sık pozitif.", yorum: "LOT için yardımcı; tek başına tanısal değil." },
-  { marker: "L1CAM / FOXI1", group: "mtor", patern: "L1CAM LOT'ta artmış; FOXI1 chRCC/onkositom lehine, LOT'ta düşük/negatif.", yorum: "LOT–eozinofilik chRCC ayrımında ikinci hat." },
-  { marker: "SDHB", group: "metabolic", patern: "SDH-deficient RCC'de kayıp.", yorum: "Kaybı tanısal ve herediter uyarıdır." },
-  { marker: "FH", group: "metabolic", patern: "FH-deficient RCC'de sık kayıp; bazı olgularda korunabilir.", yorum: "Negatiflik destekler; retained FH tanıyı dışlamaz." },
-  { marker: "2SC", group: "metabolic", patern: "FH-deficient RCC'de pozitif.", yorum: "FH ile birlikte en yararlı metabolik panel." },
-  { marker: "CK20", group: "mtor", patern: "ESC RCC'de patchy/diffüz pozitif.", yorum: "Yararlı ama patognomonik değil; SDH-deficient ve bazı mTOR-mutant RCC'de görülebilir." },
-  { marker: "Cathepsin K", group: "mtor", patern: "EVT'de güçlü; ESC RCC'de sık fokal; TFEB/TFE3-altered RCC'de de görülebilir.", yorum: "TSC/mTOR ile MiT ailesi arasında örtüşme yaratır." },
-  { marker: "TFE3", group: "mit", patern: "Nükleer pozitiflik destekleyici.", yorum: "Şüphede FISH/RNA-seq ile doğrulanmalı." },
-  { marker: "TFEB", group: "mit", patern: "Nükleer pozitiflik destekleyici.", yorum: "Rearrangement ve amplifikasyon ayrımı moleküler test gerektirir." },
-  { marker: "Melan A / HMB45", group: "mit", patern: "TFEB-altered RCC ve PEComa'da sık pozitif.", yorum: "PAX8 ile birlikte okunursa TFEB-altered RCC–PEComa ayrımında yardımcı." },
-];
-
-const SOURCES = [
-  { text: "WHO Classification of Tumours, Urinary and Male Genital Tumours, 5th edition, 2022." },
-  { text: "GUPS update on renal neoplasia; Mod Pathol 2021. DOI: 10.1038/s41379-021-00737-6" },
-  { text: "LOT and mTOR pathway; Mod Pathol 2021. DOI: 10.1038/s41379-021-00906-7" },
-  { text: "EVT multicentre series; Mod Pathol 2021. DOI: 10.1038/s41379-021-00923-6" },
-  { text: "ESC RCC clonal TSC loss; Mod Pathol 2021. DOI: 10.1038/s41379-021-00816-8" },
-  { text: "SDH-deficient RCC classic description; Mod Pathol 2015. DOI: 10.1038/modpathol.2014.86" },
-  { text: "FH-deficient RCC recent omics cohort; Nat Commun 2025. DOI: 10.1038/s41467-025-59513-8" },
-  { text: "TFE3/TFEB IHC panel; Virchows Arch 2022. DOI: 10.1007/s00428-022-03380-x" },
-  { text: "EAU Guidelines on Renal Cell Carcinoma 2025." },
-  { text: "Recent review of oncocytic/eosinophilic renal neoplasms and WHO 2022 changes: Modern Pathology / Nature Reviews Urology." },
-];
-
-const GROUP_LABELS = { distal: "Distal nefron", metabolic: "Metabolik", mit: "MiT ailesi", mtor: "TSC/mTOR" };
-const BADGE_COLOR = { ok: "ok", warn: "warn", danger: "danger" };
-
-/* ─── COMPONENTS ───────────────────────────────────────── */
-function AlgoStep({ step, open, onToggle }) {
-  return (
-    <div className="algo-step">
-      <div className="algo-step-header" onClick={onToggle} role="button" aria-expanded={open}>
-        <div className="step-num">{step.id}</div>
-        <div className="algo-step-title">{step.title}</div>
-        <div className={`algo-chevron ${open ? 'open' : ''}`}>▼</div>
-      </div>
-      {open && <div className="algo-body">{step.content}</div>}
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Patolog karar destek</div>
+    <h1>Onkositik Özellikli Böbrek Tümörleri</h1>
+    <div class="subtitle">Dr. Mahmut Akgül’ün morfoloji-öncelikli sınıflama yaklaşımı temel alınarak; WHO 2022 ve güncel IHK/moleküler pratik ile yeniden düzenlenmiş interaktif HTML.</div>
+    <div class="meta">
+      <span class="chip">TR · İnteraktif</span><span class="chip">Açık/koyu tema</span><span class="chip">Kısaltma kulakçıkları</span><span class="chip">17 Haziran 2026</span>
     </div>
-  );
-}
-
-/* ─── SECTION: ÖZET ─────────────────────────────────────── */
-function SectionOzet() {
-  return (
-    <div>
-      <div className="section-title">Yönetici Özeti</div>
-      <div className="section-sub">WHO 2022 · Güncel moleküler sınıflamalar</div>
-
-      <div className="callout info">
-        <b>Ana mesaj:</b> Tek marker ile tanı koymayın. CK7, CD117, CK20, Cathepsin K, GATA3, SDHB, FH/2SC, TFE3 ve TFEB ancak morfoloji bağlamında anlamlıdır.
-      </div>
-
-      <div className="stat-row">
-        <div className="stat-box"><div className="stat-num">3</div><div className="stat-label">Başlangıç sorusu: morfoloji · CK7/CD117 · metabolik alarm</div></div>
-        <div className="stat-box"><div className="stat-num">7+</div><div className="stat-label">Morfoloji + IHK ile sınıflanabilen onkositik entite</div></div>
-      </div>
-
-      <div className="card">
-        <div className="card-title"><span className="icon">🔬</span>Pratik yaklaşım</div>
-        <p>Onkositik/eozinofilik böbrek tümörleri artık yalnızca <b>renal onkositom</b> ve <b>chromophobe RCC</b> ikili ayrımıyla güvenli yönetilemez. Pratikte onkositom, chromophobe RCC, LOT, EVT, ESC RCC, HOCT, SDH-deficient RCC, FH-deficient RCC ve TFE3/TFEB-altered RCC birlikte düşünülmelidir.</p>
-        <p>En verimli yaklaşım <b>üç basamaklıdır</b>: düşük büyütmede mimari/sitoloji ile spektrumu daralt → hedefli IHK paneli ile düğüm noktalarını çöz → sendromik/prognostik belirsizlik kalırsa moleküler doğrulamaya git.</p>
-      </div>
-
-      <div className="card">
-        <div className="card-title"><span className="icon">🏷</span>Pratik eksenler</div>
-        <div className="pillrow">
-          <span className="badge default">Distal nefron spektrumu</span>
-          <span className="badge teal">TSC/mTOR ilişkili</span>
-          <span className="badge warn">Metabolik/herediter</span>
-          <span className="badge danger">MiT ailesi</span>
-        </div>
-      </div>
+  </div>
+</header>
+<nav class="toolbar">
+  <div class="wrap">
+    <div class="nav">
+      <a href="#ozet">Özet</a><a href="#mahmut">Mahmut hoca akışı</a><a href="#kit">KIT/KRT7 dağılımı</a><a href="#ihk">IHK paneli</a><a href="#tipler">Alt tipler</a><a href="#sinir">Moleküler sınır</a><a href="#abbr">Kısaltmalar</a><a href="#rapor">Rapor dili</a>
     </div>
-  );
-}
-
-/* ─── SECTION: ALGORİTMA ────────────────────────────────── */
-function SectionAlgoritma() {
-  const [openSteps, setOpenSteps] = useState({ 1: true, 2: true, 3: false, 4: false, 5: false });
-  const [scenario, setScenario] = useState("all");
-
-  const scenarios = [
-    { id: "all", label: "Tümü" },
-    { id: "ck7cd117", label: "CK7/CD117" },
-    { id: "metabolic", label: "Metabolik" },
-    { id: "mit", label: "TFE3/TFEB" },
-    { id: "biopsy", label: "Biyopsi" },
-  ];
-
-  const toggle = (id) => setOpenSteps(s => ({ ...s, [id]: !s[id] }));
-  const expandAll = () => setOpenSteps(Object.fromEntries(ALGO_STEPS.map(s => [s.id, true])));
-  const collapseAll = () => setOpenSteps(Object.fromEntries(ALGO_STEPS.map(s => [s.id, false])));
-
-  const visible = ALGO_STEPS.filter(s => scenario === "all" || s.tags.includes(scenario));
-
-  return (
-    <div>
-      <div className="section-title">Adım Adım Algoritma</div>
-      <div className="section-sub">Senaryo seçerek ilgili adımları filtreleyin</div>
-
-      <div className="scenario-row">
-        {scenarios.map(sc => (
-          <button key={sc.id} className={`scenario-pill ${scenario === sc.id ? 'active' : ''}`}
-            onClick={() => setScenario(sc.id)}>{sc.label}</button>
-        ))}
-      </div>
-
-      <div className="btn-row">
-        <button className="btn primary" onClick={expandAll}>Tümünü Aç</button>
-        <button className="btn" onClick={collapseAll}>Tümünü Kapat</button>
-      </div>
-
-      {visible.map(step => (
-        <AlgoStep key={step.id} step={step} open={!!openSteps[step.id]}
-          onToggle={() => toggle(step.id)} />
-      ))}
+    <button class="themebtn" id="themeToggle" type="button" aria-label="Tema değiştir">🌙 <span>Koyu</span></button>
+  </div>
+</nav>
+<main class="wrap">
+<section id="ozet" class="grid">
+  <div class="card col-8">
+    <h2 class="card-title"><span class="icon">📌</span>Yönetici özeti</h2>
+    <p><b>Ana eksen Mahmut hocanın yaklaşımıdır:</b> önce tümörün onkositik olup olmadığını ve yüksek dereceli alarm bulgularını değerlendir; sonra papiller formasyon varlığını sorgula; düşük nükleer dereceli grupta KIT/KRT7 ve hedefli markerlarla ayrımı derinleştir.</p>
+    <div class="callout"><b>Pratik kural:</b> Onkositik böbrek tümörlerinde tek marker ile tanı koyma. Morfoloji → sınırlı IHK paneli → gerektiğinde moleküler doğrulama sırası korunmalıdır.</div>
+    <div class="kpirow">
+      <div class="kpi"><div class="num">1</div><div class="label">Morfoloji ilk basamak</div></div>
+      <div class="kpi"><div class="num">2</div><div class="label">Yüksek grade ve papilla ayrımı</div></div>
+      <div class="kpi"><div class="num">3</div><div class="label">KIT/KRT7 + hedefli IHK</div></div>
     </div>
-  );
-}
+  </div>
+  <div class="card col-4">
+    <h2 class="card-title"><span class="icon">🏷️</span>Pratik sepetler</h2>
+    <span class="badge">Onkositom / chRCC</span><span class="badge teal">LOT / EVT / ESC RCC</span><span class="badge warn">SDH / FH</span><span class="badge danger">TFE3 / TFEB / AML mimikleri</span>
+    <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+    <p class="small"><b>Güvenli tanı dili:</b> Rezeksiyonda tipik morfoloji + uyumlu IHK çoğu olguda yeterlidir. Biyopside “favor” veya “low-grade oncocytic renal neoplasm” dili daha güvenlidir.</p>
+  </div>
+</section>
 
-/* ─── SECTION: ALT TİPLER ──────────────────────────────── */
-function SectionTipler() {
-  const [query, setQuery] = useState("");
-  const [group, setGroup] = useState("");
-
-  const filtered = useMemo(() => TUMORS.filter(t => {
-    const q = query.toLowerCase();
-    const matchQ = !q || [t.name, t.morfoloji, t.ihk, t.mol].join(" ").toLowerCase().includes(q);
-    const matchG = !group || t.tag === group;
-    return matchQ && matchG;
-  }), [query, group]);
-
-  return (
-    <div>
-      <div className="section-title">Alt Tipler</div>
-      <div className="section-sub">Morfoloji · IHK · Moleküler korelasyon</div>
-
-      <div className="filter-bar">
-        <input className="filter-input" placeholder="Ara: EVT, CK20, FH…"
-          value={query} onChange={e => setQuery(e.target.value)} />
-        <select className="filter-select" value={group} onChange={e => setGroup(e.target.value)}>
-          <option value="">Tüm gruplar</option>
-          {Object.entries(GROUP_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </div>
-
-      {filtered.length === 0 && <div className="callout info">Eşleşen alt tip bulunamadı.</div>}
-
-      {filtered.map(t => (
-        <div key={t.name} className="tumor-card">
-          <div className="tumor-name">
-            <span className={`badge ${BADGE_COLOR[t.badge] || 'default'}`}>{
-              t.badge === 'ok' ? 'Benign/İndolent' : t.badge === 'warn' ? 'Dikkatli' : 'Agresif risk'
-            }</span>
-            {t.name}
-          </div>
-          <div className="tumor-row">
-            <div className="tumor-row-label">Morfoloji</div>
-            <div className="tumor-row-val">{t.morfoloji}</div>
-          </div>
-          <div className="tumor-row">
-            <div className="tumor-row-label">IHK</div>
-            <div className="tumor-row-val">{t.ihk}</div>
-          </div>
-          <div className="tumor-row">
-            <div className="tumor-row-label">Moleküler / Klinik</div>
-            <div className="tumor-row-val">{t.mol}</div>
-          </div>
-        </div>
-      ))}
+<section id="mahmut" class="grid">
+  <div class="section-head col-12"><h2>Mahmut Akgül yaklaşımı ile morfolojik algoritma</h2><p>Akış, eklediğiniz HTML’deki “high-grade features / papilla / low nuclear grade” sınıflama mantığına göre Türkçeleştirilip genişletildi.</p></div>
+  <div class="card col-7">
+    <div class="flow">
+      <div class="node"><h3 class="decision">Başla: Tümör onkositik/eozinofilik mi?</h3><p>Eozinofilik granüler sitoplazma, solid/nested/asiner/mikrokistik veya “archipelago” benzeri patern; ancak önce berrak hücreli RCC, papiller RCC ve AML/PEComa mimiklerini dışlama refleksi korunur.</p></div>
+      <div class="arrow">↓</div>
+      <div class="node"><h3 class="decision">Yüksek dereceli özellik var mı?</h3><p>Belirgin sitolojik atipi, infiltratif büyüme, desmoplazi, koagülatif nekroz, artmış mitoz veya agresif klinik varsa sıradan düşük dereceli onkositik spektrumdan çık.</p><div class="callout danger"><b>Evet ise düşün:</b> ccRCC, epiteloid AML/PEComa, FH-deficient RCC, TFEB amplified RCC, ALK-rearranged RCC, SMARCB1-deficient RMC, papiller RCC’nin onkositik varyantları veya solid papiller RCC.</div></div>
+      <div class="arrow">↓ yüksek grade yoksa</div>
+      <div class="node"><h3 class="decision">Papilla formasyonu var mı?</h3><p>Papiller mimari belirginse papiller RCC with oncocytic features ve papillary renal neoplasm with reverse polarity gibi olasılıklara yönel.</p></div>
+      <div class="arrow">↓ papilla yoksa</div>
+      <div class="node"><h3 class="decision">Düşük nükleer dereceli onkositik grup</h3><p>Onkositom, eozinofilik chRCC, LOT, EVT, ESC RCC, SDH-deficient RCC, düşük dereceli FH-deficient RCC, BHD ilişkili hibrit tümörler ve “oncocytic renal neoplasm of low malignant potential” spektrumu içinde ayrım yap.</p></div>
     </div>
-  );
-}
+  </div>
+  <div class="card col-5">
+    <h2 class="card-title"><span class="icon">🔎</span>Mahmut hocanın pratik vurguları</h2>
+    <ul>
+      <li><b>Morfoloji önce:</b> IHK, morfolojik hipotezi test etmek için kullanılır.</li>
+      <li><b>Kaynak sınırlılığı:</b> Her laboratuvarda SDHB, FH, 2SC ve Cathepsin K bulunmayabilir; tanı güveni buna göre rapora yansıtılmalıdır.</li>
+      <li><b>Deneyim değişkenliği:</b> Nadir tümörlerde düşük eşikli konsültasyon ve/veya moleküler doğrulama önerilir.</li>
+      <li><b>Biyopsi:</b> sınırlı örnekle kesin “onkositom” demek yerine temkinli, korelasyon isteyen dil tercih edilir.</li>
+    </ul>
+    <div class="callout warn"><b>Alarm:</b> KRT7/KIT çift negatif, rozet, pigment, bazofilik stippling, kalsifikasyon, nekroz veya belirgin atipi varsa “moleküler tanımlı RCC / epiteloid AML?” sorusu erken sorulmalıdır.</div>
+  </div>
+</section>
 
-/* ─── SECTION: IHK PANELİ ──────────────────────────────── */
-function SectionIHK() {
-  const [query, setQuery] = useState("");
-  const [group, setGroup] = useState("");
-
-  const filtered = useMemo(() => IHK.filter(m => {
-    const q = query.toLowerCase();
-    const matchQ = !q || [m.marker, m.patern, m.yorum].join(" ").toLowerCase().includes(q);
-    const matchG = !group || m.group === group;
-    return matchQ && matchG;
-  }), [query, group]);
-
-  const groupColor = { distal: "default", mtor: "teal", metabolic: "warn", mit: "danger" };
-
-  return (
-    <div>
-      <div className="section-title">IHK Paneli</div>
-      <div className="section-sub">Hızlı filtre — marker veya tanı ara</div>
-
-      <div className="filter-bar">
-        <input className="filter-input" placeholder="Ara: CK7, LOT, SDHB…"
-          value={query} onChange={e => setQuery(e.target.value)} />
-        <select className="filter-select" value={group} onChange={e => setGroup(e.target.value)}>
-          <option value="">Tüm markerlar</option>
-          {Object.entries(GROUP_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </div>
-
-      {filtered.length === 0 && <div className="callout info">Eşleşen marker bulunamadı.</div>}
-
-      {filtered.map(m => (
-        <div key={m.marker} className="ihk-card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div className="ihk-marker">{m.marker}</div>
-            <span className={`badge ${groupColor[m.group] || 'default'}`}>{GROUP_LABELS[m.group]}</span>
-          </div>
-          <div className="ihk-row"><strong>Beklenen patern:</strong> {m.patern}</div>
-          <div className="ihk-row"><strong>Pratik yorum:</strong> {m.yorum}</div>
-        </div>
-      ))}
+<section id="kit" class="grid">
+  <div class="section-head col-12"><h2>KIT/KRT7 dağılımı: hızlı karar düğümü</h2><p>Mahmut hoca HTML’indeki KIT pozitif / KIT negatif ayrımı korunarak Türkçe pratik tabloya dönüştürüldü.</p></div>
+  <div class="card col-6">
+    <h2 class="card-title"><span class="icon">✅</span>KIT pozitif kol</h2>
+    <div class="compact-list">
+      <div class="mini"><b>Onkositom</b><span class="badge ok">KRT7 nadir/seyrek +</span><p>KIT diffüz güçlü; klasik düşük dereceli morfoloji ile en güvenli.</p></div>
+      <div class="mini"><b>Chromophobe RCC</b><span class="badge warn">KRT7 çoğu kez +</span><p>KIT diffüz, KRT7 diffüz; membran belirginliği ve raisinoid nükleus destekler.</p></div>
+      <div class="mini"><b>EVT</b><span class="badge teal">Cathepsin K / CD10 / GPNMB +</span><p>Büyük intrastoplazmik vakuoller ve TSC/mTOR ilişkisi lehine.</p></div>
     </div>
-  );
-}
-
-/* ─── SECTION: MOLEKÜLER SINIR ──────────────────────────── */
-function SectionMolekuler() {
-  return (
-    <div>
-      <div className="section-title">Moleküler Test Sınırı</div>
-      <div className="section-sub">Ne zaman morfoloji+IHK yeterli, ne zaman moleküler gerekir?</div>
-
-      <div className="grid-2">
-        <div className="card">
-          <div className="card-title"><span className="icon">✅</span>IHK ile yeterli sınıflanabilen</div>
-          <p style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Rezeksiyon materyalinde tipik morfoloji ve uyumlu IHK ile çoğu olguda yeterli:</p>
-          <div className="pillrow">
-            {["Klasik onkositom","Tipik chRCC","LOT","EVT","ESC RCC","SDH-deficient RCC","Birçok FH-deficient RCC"].map(t => (
-              <span key={t} className="badge ok">{t}</span>
-            ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-title"><span className="icon">🧬</span>Moleküler test gereken durumlar</div>
-          <ul>
-            <li><b>TFE3/TFEB şüphesi:</b> IHK heterojen; FISH veya RNA-füzyon analizi önerilir.</li>
-            <li><b>FH morfolojisi var ama FH boyası korunmuş:</b> FH retained tanıyı dışlamaz.</li>
-            <li><b>HOCT, multifokal/bilateral:</b> FLCN/BHD açısından genetik değerlendirme.</li>
-            <li><b>Yüksek dereceli / metastatik mTOR-yolak tümörler.</b></li>
-            <li><b>Teknik şüpheli SDHB/FH/2SC sonuçları.</b></li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginTop: 0 }}>
-        <div className="card-title"><span className="icon">📋</span>Örnek raporlama dili</div>
-
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: '0.75rem', fontFamily: 'var(--mono)', color: 'var(--teal)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tipik rezeksiyon materyali</div>
-          <div className="callout info" style={{ fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-            <b>Tanı:</b> Low-grade oncocytic tumor (LOT) ile uyumlu renal epitelyal neoplazi.<br/>
-            <b>Not:</b> Tümör monomorfik onkositik hücrelerden oluşmakta; CK7 diffüz güçlü pozitif, CD117 negatiftir. Morfoloji ve IHK profili LOT'u destekler. Klinik-radyolojik korelasyon önerilir.
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: '0.75rem', fontFamily: 'var(--mono)', color: 'var(--amber)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Biyopsi materyalinde temkinli dil</div>
-          <div className="callout warn" style={{ fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-            <b>Tanı:</b> Low-grade oncocytic renal neoplasm, renal oncocytoma favor.<br/>
-            <b>Not:</b> Sınırlı biyopsi materyalinde bulgular renal onkositom lehinedir; ancak eozinofilik chRCC ve diğer onkositik renal neoplazilerle örtüşme nedeniyle eksizyon/korelasyon önerilir.
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontSize: '0.75rem', fontFamily: 'var(--mono)', color: 'var(--red)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Metabolik alarm içeren olgu</div>
-          <div className="callout danger" style={{ fontFamily: 'var(--mono)', fontSize: '0.8rem' }}>
-            <b>Tanı:</b> FH-deficient renal cell carcinoma ile uyumlu.<br/>
-            <b>Not:</b> Morfoloji FH-deficient RCC açısından uyarıcıdır; FH kaybı/2SC pozitifliği tanıyı destekler. Klinik genetik danışmanlık ve germline FH değerlendirmesi önerilir.
-          </div>
-        </div>
-      </div>
+  </div>
+  <div class="card col-6">
+    <h2 class="card-title"><span class="icon">➖</span>KIT negatif kol</h2>
+    <div class="compact-list">
+      <div class="mini"><b>LOT</b><span class="badge teal">KRT7 + · GATA3 +</span><p>Diffüz güçlü CK7, KIT negatifliği ve monomorfik düşük grade görünüm.</p></div>
+      <div class="mini"><b>ESC RCC</b><span class="badge warn">KRT20 + · GPNMB +</span><p>Solid-kistik yapı, hobnail kistler ve bazofilik stippling.</p></div>
+      <div class="mini"><b>SDH-deficient RCC</b><span class="badge danger">SDHB kaybı</span><p>KIT negatif, KRT7 negatif/fokal; herediter uyarı.</p></div>
+      <div class="mini"><b>PRNRP</b><span class="badge">KRT7 + · GATA3 +</span><p>Papiller renal neoplasm with reverse polarity; papiller morfoloji ile düşün.</p></div>
     </div>
-  );
+  </div>
+</section>
+
+<section id="ihk" class="card">
+  <h2 class="card-title"><span class="icon">🧪</span>IHK paneli: hızlı filtre</h2>
+  <div class="controls"><input id="ihkSearch" placeholder="Ara: CK7, LOT, SDHB, Cathepsin K..."><select id="ihkGroup"><option value="">Tüm markerlar</option><option value="distal">Distal nefron</option><option value="mtor">TSC/mTOR</option><option value="metabolic">Metabolik</option><option value="mit">MiT / melanotik</option></select></div>
+  <div class="scrollhint">← tablo yatay kaydırılabilir →</div>
+  <div class="table-wrap"><table id="ihkTable"><thead><tr><th>Marker</th><th>Beklenen patern</th><th>Pratik yorum</th></tr></thead><tbody>
+    <tr data-group="distal"><td>CK7 / KRT7</td><td>Onkositomda negatif/seyrek; chRCC ve LOT’ta diffüz; ESC RCC’de negatif/zayıf; EVT’de seyrek.</td><td>CK7 diffüz+/CD117− → LOT; CK7 diffüz+/CD117+ → chRCC lehine.</td></tr>
+    <tr data-group="distal"><td>CD117 / KIT</td><td>Onkositom ve chRCC’de diffüz; LOT’ta negatif; EVT’de sık pozitif; SDH-deficient RCC’de tipik negatif.</td><td>Mahmut hoca yaklaşımında ilk büyük ayrım düğümü.</td></tr>
+    <tr data-group="distal"><td>PAX8</td><td>Çoğu renal epitelyal tümörde pozitif.</td><td>PAX8 negatif + melanotik marker pozitifliği PEComa/AML lehine; PAX8 pozitifse RCC olasılığı sürer.</td></tr>
+    <tr data-group="distal"><td>CAIX / CA9</td><td>ccRCC’de güçlü box-like; onkositik spektrumda genelde negatif veya sınırlı.</td><td>Onkositik görünümlü berrak hücreli RCC dışlamada yararlı.</td></tr>
+    <tr data-group="mtor"><td>GATA3</td><td>LOT’ta sık; SDH-deficient RCC’de de görülebilir.</td><td>KIT negatif grupta yardımcı, tek başına tanısal değil.</td></tr>
+    <tr data-group="mtor"><td>L1CAM / FOXI1</td><td>L1CAM LOT’ta artmış; FOXI1 onkositom/chRCC lehine, LOT’ta düşük/negatif olabilir.</td><td>LOT–eozinofilik chRCC ayrımında ikinci hat.</td></tr>
+    <tr data-group="metabolic"><td>SDHB</td><td>SDH-deficient RCC’de kayıp.</td><td>Kaybı tanısal ve herediter değerlendirme gerektirir.</td></tr>
+    <tr data-group="metabolic"><td>FH</td><td>FH-deficient RCC’de sıklıkla kayıp; bazı olgularda korunabilir.</td><td>Korunmuş FH tanıyı dışlamaz; morfoloji güçlü ise 2SC/moleküler düşün.</td></tr>
+    <tr data-group="metabolic"><td>2SC</td><td>FH-deficient RCC’de pozitif/overexpressed.</td><td>FH ile birlikte en yararlı metabolik panel.</td></tr>
+    <tr data-group="mtor"><td>CK20 / KRT20</td><td>ESC RCC’de patchy/diffüz pozitif.</td><td>ESC RCC için destekleyici; tek başına patognomonik değil.</td></tr>
+    <tr data-group="mtor mit"><td>Cathepsin K</td><td>EVT’de güçlü; ESC RCC’de fokal; TFE3/TFEB-altered RCC’de de pozitif olabilir.</td><td>TSC/mTOR ile MiT ailesi arasında örtüşme yaratır.</td></tr>
+    <tr data-group="mit"><td>TFE3</td><td>Nükleer pozitiflik destekleyici.</td><td>Şüphede FISH veya RNA-füzyon analizi ile doğrulanmalı.</td></tr>
+    <tr data-group="mit"><td>TFEB</td><td>Nükleer pozitiflik destekleyici; melanotik markerlarla birliktelik olabilir.</td><td>Rearrangement ve amplifikasyon ayrımı moleküler test gerektirir.</td></tr>
+    <tr data-group="mit"><td>Melan A / HMB45</td><td>TFEB-altered RCC ve PEComa/AML’de pozitif olabilir.</td><td>PAX8 ile birlikte yorumlanır; PAX8 negatifliği PEComa/AML lehine kaydırır.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="tipler" class="card">
+  <h2 class="card-title"><span class="icon">🏷️</span>Alt tipler: morfoloji – IHK – moleküler/klinik not</h2>
+  <div class="controls"><input id="tumorSearch" placeholder="Ara: EVT, CK20, FH, BHD, TFEB..."><select id="tumorRisk"><option value="">Tüm klinik gruplar</option><option value="indolent">Benign/indolent</option><option value="watch">Dikkatli</option><option value="risk">Agresif/metabolik/MiT risk</option></select></div>
+  <div class="scrollhint">← tablo yatay kaydırılabilir →</div>
+  <div class="table-wrap"><table id="tumorTable"><thead><tr><th>Alt tip</th><th>Morfoloji</th><th>IHK</th><th>Moleküler / klinik</th></tr></thead><tbody>
+    <tr data-risk="indolent"><td>Renal onkositom</td><td>İyi sınırlı, nested/tübüler, granüler eozinofilik sitoplazma, bland nükleus, skar olabilir.</td><td>PAX8+, CD117/KIT diffüz+, CK7/KRT7 negatif veya seyrek.</td><td>Benign; mtDNA/kompleks I kusurları, 11q13/CCND1 veya 1/Y kaybı bildirilebilir.</td></tr>
+    <tr data-risk="watch"><td>Chromophobe RCC</td><td>Belirgin membran, raisinoid nükleus, perinükleer halo; klasik/eozinofilik varyant.</td><td>CK7 diffüz+, CD117 diffüz+, PAX8+, CAIX genelde negatif.</td><td>Çoklu kromozom kayıpları; çoğu iyi prognozlu, dediferansiyasyon önemli.</td></tr>
+    <tr data-risk="indolent"><td>LOT</td><td>Solid/trabeküler/tübüler, monomorfik düşük dereceli onkositik hücreler, ödemli stroma.</td><td>CK7 diffüz güçlü+, CD117−, GATA3+, L1CAM+, PAX8+.</td><td>MTOR/TSC1/TSC2 yolak değişiklikleri; mevcut serilerde indolent.</td></tr>
+    <tr data-risk="indolent"><td>EVT</td><td>Nested/solid, büyük intrastoplazmik vakuoller, belirgin nükleol, iyi sınırlı.</td><td>Cathepsin K+, CD117+, CD10+, PAX8+, CK7 seyrek.</td><td>TSC1/TSC2/MTOR mutasyonları; çoğu indolent.</td></tr>
+    <tr data-risk="watch"><td>ESC RCC</td><td>Solid-kistik mimari, hobnail kistler, kaba bazofilik sitoplazmik stippling.</td><td>CK20 patchy/diffüz+, CK7 negatif/zayıf, PAX8+, Cathepsin K sık fokal+.</td><td>TSC1/TSC2 değişiklikleri; genelde düşük evre, metastatik potansiyel bildirilmiştir.</td></tr>
+    <tr data-risk="watch"><td>HOCT / BHD ilişkili hibrit tümör</td><td>Onkositom ve chRCC arasında hibrit/checkerboard görünüm; multifokal/bilateral olabilir.</td><td>CK7/CD117 değişken karışık patern.</td><td>FLCN/Birt-Hogg-Dubé ilişkisi; sendromik değerlendirme önemli.</td></tr>
+    <tr data-risk="risk"><td>SDH-deficient RCC</td><td>Monomorfik onkositik hücreler, mikrokistler, vakuoller/flokkülent inklüzyonlar, mast hücreleri.</td><td>SDHB kaybı, PAX8+, KIT çoğu kez negatif, CK7 nadir/fokal.</td><td>SDHx, özellikle SDHB; germline ilişki ve metastaz potansiyeli.</td></tr>
+    <tr data-risk="risk"><td>FH-deficient RCC</td><td>Solid/papiller/kribriform/tübüler veya onkositik alanlar; inclusion-benzeri nükleol, perinükleoler halo.</td><td>FH kaybı ve/veya 2SC+, PAX8+, SDHB korunur; FH retained olabilir.</td><td>FH inaktivasyonu; HLRCC/germline olasılığı; agresif klinik grup.</td></tr>
+    <tr data-risk="risk"><td>TFE3-rearranged RCC</td><td>Berrak/eozinofilik hücreler, papiller yapı, psammoma cisimleri olabilir.</td><td>TFE3 nükleer+, PAX8+, Cathepsin K bazı olgularda+.</td><td>Xp11.2/TFE3 füzyonları; FISH/RNA-seq tanısal.</td></tr>
+    <tr data-risk="risk"><td>TFEB-altered RCC</td><td>Biphasic/rozet benzeri klasik patern veya amplifiye grupta yüksek dereceli heterojen görünüm.</td><td>PAX8+, Melan A/HMB45/Cathepsin K sık, CK7 çoğu kez negatif.</td><td>TFEB rearrangement veya 6p21 amplifikasyonu; amplifiye grup daha agresif olabilir.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="sinir" class="grid">
+  <div class="card col-6"><h2 class="card-title"><span class="icon">✅</span>Moleküler test olmadan çoğu kez sınıflanabilen</h2><p>Rezeksiyon materyalinde tipik morfoloji ve uyumlu IHK ile klinik olarak yeterli düzeyde kurulabilen tanılar:</p><span class="badge ok">Klasik onkositom</span><span class="badge ok">Tipik chRCC</span><span class="badge ok">LOT</span><span class="badge ok">EVT</span><span class="badge ok">ESC RCC</span><span class="badge ok">SDH-deficient RCC</span><span class="badge ok">Birçok FH-deficient RCC</span></div>
+  <div class="card col-6"><h2 class="card-title"><span class="icon">🧬</span>Moleküler/genetik test gereken durumlar</h2><ul><li><b>TFE3/TFEB şüphesi:</b> IHK heterojen olabilir; FISH/RNA füzyon önerilir.</li><li><b>FH morfolojisi güçlü ama FH boyası korunmuş:</b> FH retained tanıyı dışlamaz.</li><li><b>HOCT veya multifokal/bilateral:</b> FLCN/BHD için genetik değerlendirme.</li><li><b>Yüksek dereceli/metastatik/atipik mTOR-yolak tümörleri.</b></li><li><b>Teknik şüpheli SDHB/FH/2SC sonuçları.</b></li></ul></div>
+</section>
+
+<section id="abbr" class="card">
+  <h2 class="card-title"><span class="icon">📇</span>Kısaltmalar için kulakçıklar</h2>
+  <div class="tabs" role="tablist"><button class="tabbtn active" data-tab="abbr-entite" type="button">Entiteler</button><button class="tabbtn" data-tab="abbr-ihk" type="button">IHK markerları</button><button class="tabbtn" data-tab="abbr-mol" type="button">Moleküler / sendrom</button><button class="tabbtn" data-tab="abbr-scale" type="button">Boyama skalası</button></div>
+  <div id="abbr-entite" class="tabpane active"><div class="abbr-grid">
+    <div class="abbr"><code>RCC</code><span>Renal cell carcinoma / renal hücreli karsinom</span></div><div class="abbr"><code>chRCC</code><span>Chromophobe renal cell carcinoma</span></div><div class="abbr"><code>LOT</code><span>Low-grade oncocytic tumor</span></div><div class="abbr"><code>EVT</code><span>Eosinophilic vacuolated tumor</span></div><div class="abbr"><code>ESC RCC</code><span>Eosinophilic solid and cystic RCC</span></div><div class="abbr"><code>HOCT</code><span>Hybrid oncocytic/chromophobe tumor</span></div><div class="abbr"><code>PRNRP</code><span>Papillary renal neoplasm with reverse polarity</span></div><div class="abbr"><code>AML / PEComa</code><span>Angiomyolipoma / perivascular epithelioid cell tumor</span></div>
+  </div></div>
+  <div id="abbr-ihk" class="tabpane"><div class="abbr-grid">
+    <div class="abbr"><code>IHK / IHC</code><span>İmmünohistokimya / immunohistochemistry</span></div><div class="abbr"><code>KRT7 / CK7</code><span>Cytokeratin 7</span></div><div class="abbr"><code>KRT20 / CK20</code><span>Cytokeratin 20</span></div><div class="abbr"><code>KIT / CD117</code><span>Tyrosine kinase receptor KIT</span></div><div class="abbr"><code>CAIX / CA9</code><span>Carbonic anhydrase IX</span></div><div class="abbr"><code>SDHB</code><span>Succinate dehydrogenase complex iron sulfur subunit B</span></div><div class="abbr"><code>FH</code><span>Fumarate hydratase</span></div><div class="abbr"><code>2SC</code><span>S-(2-succino)-cysteine</span></div><div class="abbr"><code>GPNMB</code><span>Glycoprotein non-metastatic melanoma protein B</span></div><div class="abbr"><code>L1CAM</code><span>L1 cell adhesion molecule</span></div>
+  </div></div>
+  <div id="abbr-mol" class="tabpane"><div class="abbr-grid">
+    <div class="abbr"><code>TSC1/TSC2</code><span>Tuberous sclerosis complex genleri</span></div><div class="abbr"><code>MTOR</code><span>Mechanistic target of rapamycin pathway</span></div><div class="abbr"><code>MiT</code><span>Microphthalmia transcription factor ailesi: TFE3/TFEB dahil</span></div><div class="abbr"><code>BHD</code><span>Birt-Hogg-Dubé sendromu</span></div><div class="abbr"><code>FLCN</code><span>Folliculin geni; BHD ile ilişkili</span></div><div class="abbr"><code>HLRCC</code><span>Hereditary leiomyomatosis and renal cell carcinoma</span></div><div class="abbr"><code>FISH</code><span>Fluorescence in situ hybridization</span></div><div class="abbr"><code>RNA-seq</code><span>RNA sequencing / RNA temelli füzyon analizi</span></div>
+  </div></div>
+  <div id="abbr-scale" class="tabpane"><div class="abbr-grid">
+    <div class="abbr"><code>+++</code><span>Diffüz/güçlü pozitiflik</span></div><div class="abbr"><code>++</code><span>Orta derecede veya yaygın pozitiflik</span></div><div class="abbr"><code>+ / ±</code><span>Fokal, zayıf veya değişken pozitiflik</span></div><div class="abbr"><code>−</code><span>Negatif</span></div><div class="abbr"><code>Retained</code><span>Protein ekspresyonu korunmuş</span></div><div class="abbr"><code>Loss</code><span>Protein ekspresyon kaybı; iç kontrol şart</span></div><div class="abbr"><code>ND</code><span>Not determined / değerlendirilmemiş</span></div><div class="abbr"><code>LMP</code><span>Low malignant potential / düşük malign potansiyel</span></div>
+  </div></div>
+</section>
+
+<section id="rapor" class="card">
+  <h2 class="card-title"><span class="icon">📝</span>Örnek raporlama dili</h2>
+  <details open><summary>Tipik rezeksiyon materyali</summary><div class="content"><p><b>Tanı:</b> Low-grade oncocytic tumor (LOT) ile uyumlu renal epitelyal neoplazi.</p><p><b>Not:</b> Tümör monomorfik onkositik hücrelerden oluşmakta; CK7 diffüz güçlü pozitif, CD117 negatiftir. Morfoloji ve IHK profili LOT’u destekler. Klinik-radyolojik korelasyon önerilir.</p></div></details>
+  <details><summary>Biyopsi materyalinde temkinli dil</summary><div class="content"><p><b>Tanı:</b> Low-grade oncocytic renal neoplasm, renal oncocytoma favor.</p><p><b>Not:</b> Sınırlı biyopsi materyalinde bulgular renal onkositom lehinedir; ancak eozinofilik chromophobe RCC ve diğer onkositik renal neoplazilerle örtüşme nedeniyle eksizyon/korelasyon önerilir.</p></div></details>
+  <details><summary>Metabolik alarm içeren olgu</summary><div class="content"><p><b>Tanı:</b> FH-deficient renal cell carcinoma ile uyumlu.</p><p><b>Not:</b> Morfoloji FH-deficient RCC açısından uyarıcıdır; FH kaybı/2SC pozitifliği tanıyı destekler. Klinik genetik danışmanlık ve germline FH değerlendirmesi önerilir.</p></div></details>
+  <div class="callout warn"><b>Not:</b> Bu dosya karar destek / eğitim amaçlıdır. Nihai tanı için preparat kalitesi, lokal antikor klonları, klinik-radyolojik bilgi ve gerektiğinde moleküler/genetik doğrulama birlikte değerlendirilmelidir.</div>
+</section>
+
+</main>
+<footer class="wrap footer">2026 Haziran. Tanı için kullanılmaz, yardımcı yöntem geliştirme amacıyla kodlanmıştır.</footer>
+<script>
+(function(){
+  const root=document.documentElement;
+  const btn=document.getElementById('themeToggle');
+  const saved=localStorage.getItem('onkositik-theme');
+  if(saved){root.setAttribute('data-theme',saved)}
+  function sync(){const dark=root.getAttribute('data-theme')!=='light';btn.innerHTML=(dark?'🌙 <span>Koyu</span>':'☀️ <span>Açık</span>')}
+  btn.addEventListener('click',()=>{const next=root.getAttribute('data-theme')==='light'?'dark':'light';root.setAttribute('data-theme',next);localStorage.setItem('onkositik-theme',next);sync()});sync();
+})();
+function filterRows(){
+  const q=(document.getElementById('ihkSearch').value||'').toLowerCase();
+  const g=(document.getElementById('ihkGroup').value||'');
+  document.querySelectorAll('#ihkTable tbody tr').forEach(r=>{const text=r.innerText.toLowerCase();const groups=r.dataset.group||'';r.style.display=(!q||text.includes(q))&&(!g||groups.includes(g))?'':'none'});
 }
-
-/* ─── SECTION: KAYNAKLAR ────────────────────────────────── */
-function SectionKaynaklar() {
-  return (
-    <div>
-      <div className="section-title">Kaynaklar</div>
-      <div className="section-sub">Seçilmiş kaynaklar ve DOI notları</div>
-
-      <div className="card">
-        {SOURCES.map((s, i) => (
-          <div key={i} className="source-item">
-            <div className="source-num">{String(i+1).padStart(2,'0')}</div>
-            <div className="source-text">{s.text}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="callout warn">
-        <b>⚠ Önemli not:</b> Bu araç karar destek amaçlıdır; nihai tanı için preparat kalitesi, lokal antikor klonları, klinik-radyolojik bilgi ve gerektiğinde moleküler/genetik doğrulama birlikte değerlendirilmelidir.
-      </div>
-    </div>
-  );
+document.getElementById('ihkSearch').addEventListener('input',filterRows);document.getElementById('ihkGroup').addEventListener('change',filterRows);
+function filterTumors(){
+  const q=(document.getElementById('tumorSearch').value||'').toLowerCase();const risk=(document.getElementById('tumorRisk').value||'');
+  document.querySelectorAll('#tumorTable tbody tr').forEach(r=>{const text=r.innerText.toLowerCase();r.style.display=(!q||text.includes(q))&&(!risk||r.dataset.risk===risk)?'':'none'});
 }
-
-/* ─── MAIN APP ──────────────────────────────────────────── */
-const TABS = [
-  { id: "ozet",      label: "Özet",      icon: "📊", Component: SectionOzet },
-  { id: "algoritma", label: "Algoritma", icon: "🔁", Component: SectionAlgoritma },
-  { id: "tipler",    label: "Alt Tipler",icon: "🏷",  Component: SectionTipler },
-  { id: "ihk",       label: "IHK",       icon: "🧪", Component: SectionIHK },
-  { id: "mol",       label: "Moleküler", icon: "🧬", Component: SectionMolekuler },
-  { id: "kaynak",    label: "Kaynaklar", icon: "📚", Component: SectionKaynaklar },
-];
-
-function App() {
-  const [active, setActive] = useState("ozet");
-  const ActiveSection = TABS.find(t => t.id === active)?.Component || SectionOzet;
-
-  return (
-    <>
-      <header className="header">
-        <div className="header-inner">
-          <div className="header-eyebrow">Patolog Karar Destek</div>
-          <h1>Onkositik Böbrek Tümörleri</h1>
-          <div className="header-sub">WHO 2022 · Güncel moleküler sınıflamalar ışığında morfoloji, IHK, moleküler korelasyon ve pratik tanı algoritması.</div>
-          <div className="header-meta">
-            <span className="chip">TR · İnteraktif</span>
-            <span className="chip">17 Haziran 2026</span>
-            <span className="chip">WHO 2022</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Desktop top nav */}
-      <nav className="top-nav">
-        <div className="top-nav-inner">
-          {TABS.map(t => (
-            <button key={t.id} className={`top-nav-btn ${active === t.id ? 'active' : ''}`}
-              onClick={() => setActive(t.id)}>{t.icon} {t.label}</button>
-          ))}
-        </div>
-      </nav>
-
-      <main className="main">
-        <ActiveSection />
-      </main>
-
-      {/* Mobile bottom nav */}
-      <nav className="bottom-nav">
-        {TABS.map(t => (
-          <button key={t.id} className={`bnav-item ${active === t.id ? 'active' : ''}`}
-            onClick={() => { setActive(t.id); window.scrollTo(0,0); }}>
-            <span className="bnav-icon">{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
-      </nav>
-    </>
-  );
-}
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+document.getElementById('tumorSearch').addEventListener('input',filterTumors);document.getElementById('tumorRisk').addEventListener('change',filterTumors);
+document.querySelectorAll('.tabbtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tabpane').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab).classList.add('active')}));
 </script>
 </body>
 </html>
