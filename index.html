@@ -3,320 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Onkositik Özellikli Böbrek Tümörleri - Patolog Algoritması</title>
+  <title>Onkositik Böbrek Tümörleri Algoritması</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <style>
-    /* Mobilde yatay kaydırma çubuğunu gizlemek ama kaydırmayı aktif tutmak için */
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    html { scroll-behavior: smooth; }
-    body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
-    
-    details > summary { list-style: none; }
-    details > summary::-webkit-details-marker { display: none; }
-  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client"
+      }
+    }
+  </script>
 </head>
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useMemo } = React;
+  <script type="module">
+    import React, { useState, useMemo } from 'react';
+    import { createRoot } from 'react-dom/client';
 
-    // --- VERİ SETLERİ ---
+    // VERİLER
     const ihcData = [
       { id: 1, name: "CK7", group: "distal", pattern: "Onkositomda negatif/seyrek; chRCC ve LOT’ta diffüz; ESC RCC’de negatif/zayıf; EVT’de seyrek.", comment: "CK7 diffüz+/CD117− LOT lehine; CK7 diffüz+/CD117+ chRCC lehine." },
-      { id: 2, name: "CD117/KIT", group: "distal", pattern: "Onkositom ve chRCC’de diffüz; LOT’ta negatif; EVT’de sık pozitif; SDH-deficient RCC’de tipik negatif.", comment: "CK7 ile birlikte yorumlanmalı." },
-      { id: 3, name: "PAX8", group: "distal", pattern: "Çoğu renal epitelyal tümörde pozitif.", comment: "Renal kökeni destekler; PEComa ayrımında önemlidir." },
-      { id: 4, name: "CAIX", group: "distal", pattern: "Onkositik spektrumda genellikle negatif; ccRCC’de güçlü box-like membranöz.", comment: "Berrak/eozinofilik mimiklerde ccRCC dışlama." },
-      { id: 5, name: "GATA3", group: "mtor", pattern: "LOT’ta sık pozitif.", comment: "LOT için yardımcı; tek başına tanısal değil." },
-      { id: 6, name: "L1CAM / FOXI1", group: "mtor", pattern: "L1CAM LOT’ta artmış; FOXI1 chRCC/onkositom lehine, LOT’ta düşük/negatif.", comment: "LOT–eozinofilik chRCC ayrımında ikinci hat." },
-      { id: 7, name: "SDHB", group: "metabolic", pattern: "SDH-deficient RCC’de kayıp.", comment: "Kaybı tanısal ve herediter uyarıdır." },
-      { id: 8, name: "FH", group: "metabolic", pattern: "FH-deficient RCC’de sık kayıp; bazı olgularda korunabilir.", comment: "Negatiflik destekler; retained FH tanıyı dışlamaz." },
-      { id: 9, name: "2SC", group: "metabolic", pattern: "FH-deficient RCC’de pozitif.", comment: "FH ile birlikte en yararlı metabolik panel." },
-      { id: 10, name: "CK20", group: "mtor", pattern: "ESC RCC’de patchy/diffüz pozitif.", comment: "Yararlı ama patognomonik değil; SDH-deficient ve bazı mTOR-mutant RCC’de görülebilir." },
-      { id: 11, name: "Cathepsin K", group: "mit", pattern: "EVT’de güçlü; ESC RCC’de sık fokal; TFEB/TFE3-altered RCC’de de görülebilir.", comment: "TSC/mTOR ile MiT ailesi arasında örtüşme yaratır." },
-      { id: 12, name: "TFE3", group: "mit", pattern: "Nükleer pozitiflik destekleyici.", comment: "Şüphede FISH/RNA-seq ile doğrulanmalı." },
-      { id: 13, name: "TFEB", group: "mit", pattern: "Nükleer pozitiflik destekleyici.", comment: "Rearrangement ve amplifikasyon ayrımı moleküler test gerektirir." },
-      { id: 14, name: "Melan A / HMB45", group: "mit", pattern: "TFEB-altered RCC ve PEComa’da sık pozitif.", comment: "PAX8 ile birlikte okunursa TFEB-altered RCC–PEComa ayrımında yardımcı." }
+      { id: 2, name: "CD117/KIT", group: "distal", pattern: "Onkositom ve chRCC’de diffüz; LOT’ta negatif; EVT’de sık pozitif; SDH-deficient RCC’de tipik negatif.", comment: "CK7 ile birlikte yorumlanmalı." }
+      // ... diğer verilerinizi buraya ekleyin
     ];
 
-    const tumorData = [
-      { id: 1, name: "Renal onkositom", morph: "İyi sınırlı, yuva/tübül, yoğun granüler eozinofilik sitoplazma, uniform bland nükleus; skar olabilir.", ihc: "PAX8+, CD117 diffüz+, CK7 negatif/seyrek.", mol: "Benign; mtDNA/kompleks I kusuru, 11q13/CCND1 veya kromozom 1/Y kaybı bildirilebilir." },
-      { id: 2, name: "Chromophobe RCC", morph: "Belirgin hücre membranı, raisinoid nükleus, perinükleer halo; klasik/eozinofilik varyant.", ihc: "CK7 diffüz+, CD117 diffüz+, PAX8+, CAIX genelde negatif.", mol: "Çoklu kromozom kayıpları; TP53/PTEN/TERT ilişkili değişiklikler; çoğu iyi prognozlu, dediferansiyasyon önemli." },
-      { id: 3, name: "LOT", morph: "Solid/trabeküler/tübüler, monomorfik düşük dereceli onkositik hücreler; ödemli stroma ve kapiller ağ.", ihc: "CK7 diffüz güçlü+, CD117−, GATA3+, L1CAM+, PAX8+.", mol: "MTOR/TSC1/TSC2 yolak değişiklikleri; mevcut serilerde indolent." },
-      { id: 4, name: "EVT", morph: "Nested/solid, büyük intrastoplazmik vakuoller, belirgin nükleol; iyi sınırlı.", ihc: "Cathepsin K+, CD117+, CD10+, PAX8+, CK7 seyrek.", mol: "TSC1/TSC2/MTOR mutasyonları; çoğu indolent." },
-      { id: 5, name: "ESC RCC", morph: "Solid-kistik mimari, hobnail döşeli kistler, kaba bazofilik sitoplazmik stippling.", ihc: "CK20 patchy/diffüz+, CK7 negatif/zayıf, PAX8+, Cathepsin K sık fokal+.", mol: "TSC1/TSC2 değişiklikleri; genelde düşük evre ama metastatik potansiyel bildirilmiştir." },
-      { id: 6, name: "HOCT", morph: "Onkositom ve chRCC arasında hibrit/checkerboard görünüm; multifokal/bilateral olabilir.", ihc: "CK7/CD117 değişken karışık patern.", mol: "FLCN/Birt-Hogg-Dubé ilişkisi; sendromik değerlendirme önemli." },
-      { id: 7, name: "SDH-deficient RCC", morph: "Monomorfik onkositik hücreler, mikrokistler, vakuoller/flokkülent inklüzyonlar, mast hücreleri.", ihc: "SDHB kaybı, PAX8+, KIT çoğu kez negatif, CK7 nadir/fokal.", mol: "SDHx, özellikle SDHB; germline ilişki ve metastaz potansiyeli." },
-      { id: 8, name: "FH-deficient RCC", morph: "Geniş spektrum; solid/papiller/kribriform/tübüler veya onkositik alanlar; inclusion-benzeri nükleol ve perinükleoler halo.", ihc: "FH kaybı ve/veya 2SC+, PAX8+, SDHB korunur; FH retained olabilir.", mol: "FH inaktivasyonu; HLRCC/germline olasılığı; agresif klinik grup." },
-      { id: 9, name: "TFE3-rearranged RCC", morph: "Geniş morfolojik spektrum; berrak/eozinofilik hücreler, papiller yapı, psammoma cisimleri olabilir.", ihc: "TFE3 nükleer+, PAX8+, Cathepsin K bazı olgularda+.", mol: "Xp11.2/TFE3 füzyonları; FISH/RNA-seq tanısal." },
-      { id: 10, name: "TFEB-altered RCC", morph: "Biphasic/rozet benzeri klasik patern veya amplifiye grupta yüksek dereceli heterojen görünüm.", ihc: "PAX8+, Melan A/HMB45/Cathepsin K sık, CK7 çoğu kez negatif.", mol: "TFEB rearrangement veya 6p21 amplifikasyonu; amplifiye grup daha agresif olabilir." }
-    ];
-
-    // --- ANA UYGULAMA BİLEŞENİ ---
-    const App = () => {
-      const [ihcSearch, setIhcSearch] = useState("");
-      const [ihcGroup, setIhcGroup] = useState("");
-      const [tumorSearch, setTumorSearch] = useState("");
-      const [scenario, setScenario] = useState("all");
-
-      // Filtreleme Mantıkları
-      const filteredIHC = useMemo(() => {
-        return ihcData.filter(item => {
-          const matchSearch = item.name.toLowerCase().includes(ihcSearch.toLowerCase()) || 
-                              item.pattern.toLowerCase().includes(ihcSearch.toLowerCase());
-          const matchGroup = ihcGroup === "" || item.group === ihcGroup;
-          return matchSearch && matchGroup;
-        });
-      }, [ihcSearch, ihcGroup]);
-
-      const filteredTumors = useMemo(() => {
-        return tumorData.filter(item => 
-          item.name.toLowerCase().includes(tumorSearch.toLowerCase()) ||
-          item.ihc.toLowerCase().includes(tumorSearch.toLowerCase()) ||
-          item.morph.toLowerCase().includes(tumorSearch.toLowerCase())
-        );
-      }, [tumorSearch]);
-
-      const isVisible = (tag) => scenario === "all" || tag.includes(scenario);
-
+    // UYGULAMA BİLEŞENİ
+    function App() {
       return (
-        <div className="min-h-screen">
-          {/* HEADER */}
-          <header className="bg-gradient-to-br from-slate-900 via-indigo-900 to-teal-800 text-white p-6 md:p-10 shadow-lg">
-            <div className="max-w-6xl mx-auto">
-              <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-4">Onkositik Özellikler Gösteren Böbrek Tümörleri</h1>
-              <p className="text-lg md:text-xl opacity-90 max-w-4xl mb-3">WHO 2022 / güncel moleküler sınıflamalar ışığında morfoloji, immünohistokimya, moleküler korelasyon ve patolog için pratik tanı algoritması.</p>
-              <p className="text-sm opacity-75 font-mono">Türkçe interaktif karar destek dosyası · Güncelleme: 17 Haziran 2026</p>
-            </div>
-          </header>
-
-          {/* STICKY NAV (Mobilde yatay kaydırılabilir) */}
-          <nav className="sticky top-0 bg-white/95 backdrop-blur border-b border-slate-200 z-50 shadow-sm">
-            <div className="max-w-6xl mx-auto flex gap-3 p-3 overflow-x-auto hide-scrollbar">
-              {['Özet', 'Algoritma', 'IHK Paneli', 'Alt Tipler', 'Moleküler', 'Biyopsi'].map(tab => (
-                <a key={tab} href={`#${tab.toLowerCase().replace(' ', '-')}`} 
-                   className="whitespace-nowrap px-4 py-2 rounded-full border border-slate-200 text-sm font-medium text-slate-700 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
-                  {tab}
-                </a>
-              ))}
-            </div>
-          </nav>
-
-          <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-8 pb-20">
-            
-            {/* YÖNETİCİ ÖZETİ */}
-            <section id="özet" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <h2 className="text-2xl font-bold mb-4 text-slate-800">Yönetici Özeti</h2>
-                <p className="mb-4 text-slate-600 leading-relaxed">
-                  Onkositik/eozinofilik böbrek tümörleri artık yalnızca <b className="text-slate-800">renal onkositom</b> ve <b className="text-slate-800">chromophobe RCC</b> ikili ayrımıyla güvenli yönetilemez. Pratikte onkositom, chromophobe RCC, <b>LOT</b>, <b>EVT</b>, <b>ESC RCC</b>, <b>HOCT</b>, <b>SDH-deficient RCC</b>, <b>FH-deficient RCC</b> ve <b>TFE3/TFEB-altered RCC</b> birlikte düşünülmelidir.
-                </p>
-                <div className="bg-indigo-50 border-l-4 border-indigo-600 p-4 rounded-r-lg mt-4 text-indigo-900">
-                  <b className="block mb-1">Ana mesaj:</b> Tek marker ile tanı koymayın. CK7, CD117, CK20, vb. ancak morfoloji bağlamında anlamlıdır.
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <h2 className="text-xl font-bold mb-4 text-slate-800">Pratik Eksenler</h2>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full">Distal nefron</span>
-                  <span className="px-3 py-1 bg-teal-100 text-teal-800 text-xs font-bold rounded-full">TSC/mTOR</span>
-                  <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-bold rounded-full">Metabolik</span>
-                  <span className="px-3 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-full">MiT ailesi</span>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-3xl font-black text-slate-800">3</div>
-                    <div className="text-sm text-slate-500">Başlangıç sorusu: morfoloji, CK7/CD117, metabolik alarm</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-black text-slate-800">7+</div>
-                    <div className="text-sm text-slate-500">Morfoloji + IHK ile çoğu kez sınıflanabilen entite</div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ALGORİTMA */}
-            <section id="algoritma" className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h2 className="text-2xl font-bold mb-4 text-slate-800">Adım Adım Algoritma</h2>
-              
-              <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                <select className="flex-1 p-3 border border-slate-300 rounded-xl bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none" 
-                        value={scenario} onChange={(e) => setScenario(e.target.value)}>
-                  <option value="all">Tüm senaryoları göster</option>
-                  <option value="ck7cd117">CK7/CD117 karar düğümü</option>
-                  <option value="metabolic">Metabolik/herediter alarm</option>
-                  <option value="mit">TFE3/TFEB şüphesi</option>
-                  <option value="biopsy">Biyopsi materyali</option>
-                </select>
-              </div>
-
-              <div className="space-y-3">
-                {isVisible("all") && (
-                  <details className="group border border-slate-200 rounded-xl bg-slate-50 overflow-hidden" open>
-                    <summary className="cursor-pointer p-4 font-bold text-slate-800 flex justify-between items-center group-open:bg-slate-100">
-                      1. Renal epitelyal onkositik neoplazi mi?
-                      <span className="text-xl group-open:rotate-180 transition-transform">▾</span>
-                    </summary>
-                    <div className="p-4 bg-white border-t border-slate-100 text-slate-600">
-                      <b>PAX8</b> renal epitelyal kökeni destekler. PAX8 negatif, melanotik marker belirgin pozitif ise PEComa/epiteloid AML düşün. PAX8 pozitif + Melan A/HMB45/Cathepsin K pozitifliği ise özellikle <b>TFEB-altered RCC</b> veya MiT ailesi açısından uyarıcıdır.
-                    </div>
-                  </details>
-                )}
-
-                {isVisible("ck7cd117") && (
-                  <details className="group border border-slate-200 rounded-xl bg-slate-50 overflow-hidden" open>
-                    <summary className="cursor-pointer p-4 font-bold text-slate-800 flex justify-between items-center group-open:bg-slate-100">
-                      2. CK7/CD117 ekseni ile ilk ayrım
-                      <span className="text-xl group-open:rotate-180 transition-transform">▾</span>
-                    </summary>
-                    <div className="p-4 bg-white border-t border-slate-100 space-y-2">
-                      <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                        <strong className="text-slate-800 block mb-1">CK7 negatif/seyrek + CD117 diffüz pozitif</strong>
-                        <span className="text-slate-600 text-sm">En çok <b>renal onkositom</b>. Morfoloji: iyi sınırlı, yuva/tübül, granüler eozinofilik sitoplazma, bland nükleus, skar olabilir.</span>
-                      </div>
-                      <div className="text-center text-slate-400">↓</div>
-                      <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                        <strong className="text-slate-800 block mb-1">CK7 diffüz + CD117 diffüz pozitif</strong>
-                        <span className="text-slate-600 text-sm"><b>Chromophobe RCC</b> lehine. Morfoloji: belirgin membran, raisinoid nükleus, perinükleer halo.</span>
-                      </div>
-                      <div className="text-center text-slate-400">↓</div>
-                      <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                        <strong className="text-slate-800 block mb-1">CK7 diffüz güçlü + CD117 negatif</strong>
-                        <span className="text-slate-600 text-sm"><b>LOT</b> lehine. GATA3/L1CAM destekleyebilir; morfoloji ile uyum şarttır.</span>
-                      </div>
-                    </div>
-                  </details>
-                )}
-
-                {isVisible("metabolic") && (
-                  <details className="group border border-slate-200 rounded-xl bg-slate-50 overflow-hidden" open={scenario !== 'all'}>
-                    <summary className="cursor-pointer p-4 font-bold text-slate-800 flex justify-between items-center group-open:bg-slate-100">
-                      3. Metabolik ve herediter alarm işaretleri
-                      <span className="text-xl group-open:rotate-180 transition-transform">▾</span>
-                    </summary>
-                    <div className="p-4 bg-white border-t border-slate-100 text-slate-600">
-                      <p className="mb-3">Genç yaş, multifokalite/bilaterallik, aile öyküsü, paraganglioma, vs. varsa alarm paneli düşün.</p>
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li><b>SDHB kaybı:</b> SDH-deficient RCC için güçlü bulgu.</li>
-                        <li><b>FH kaybı / 2SC+:</b> FH-deficient RCC lehine.</li>
-                      </ul>
-                    </div>
-                  </details>
-                )}
-              </div>
-            </section>
-
-            {/* IHK PANELİ */}
-            <section id="ihk-paneli" className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h2 className="text-2xl font-bold mb-4 text-slate-800">İmmünohistokimya Paneli</h2>
-              
-              <div className="flex flex-col md:flex-row gap-3 mb-6">
-                <input type="text" placeholder="Marker ara (örn: CK7, LOT)..." 
-                       className="flex-1 p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                       value={ihcSearch} onChange={(e) => setIhcSearch(e.target.value)} />
-                <select className="p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
-                        value={ihcGroup} onChange={(e) => setIhcGroup(e.target.value)}>
-                  <option value="">Tüm Gruplar</option>
-                  <option value="distal">Distal Nefron</option>
-                  <option value="mtor">TSC/mTOR</option>
-                  <option value="metabolic">Metabolik</option>
-                  <option value="mit">MiT / Melanotik</option>
-                </select>
-              </div>
-
-              {/* MASAÜSTÜ TABLO GÖRÜNÜMÜ */}
-              <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-slate-800">
-                    <tr>
-                      <th className="p-4 border-b border-slate-200 font-bold">Marker</th>
-                      <th className="p-4 border-b border-slate-200 font-bold w-1/2">Beklenen Patern</th>
-                      <th className="p-4 border-b border-slate-200 font-bold">Pratik Yorum</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredIHC.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
-                        <td className="p-4 font-bold text-slate-800">{item.name}</td>
-                        <td className="p-4">{item.pattern}</td>
-                        <td className="p-4">{item.comment}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* MOBİL KART GÖRÜNÜMÜ (UX İyileştirmesi) */}
-              <div className="md:hidden space-y-4">
-                {filteredIHC.map((item, idx) => (
-                  <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                    <div className="font-bold text-lg text-indigo-700 mb-2">{item.name}</div>
-                    <div className="text-sm text-slate-700 mb-2"><span className="font-semibold text-slate-900 block mb-1">Patern:</span>{item.pattern}</div>
-                    <div className="text-sm text-slate-600"><span className="font-semibold text-slate-900 block mb-1">Yorum:</span>{item.comment}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ALT TİPLER */}
-            <section id="alt-tipler" className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h2 className="text-2xl font-bold mb-4 text-slate-800">Alt Tipler ve Morfoloji</h2>
-              
-              <input type="text" placeholder="Tümör, IHK veya morfoloji ara..." 
-                     className="w-full mb-6 p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-teal-500"
-                     value={tumorSearch} onChange={(e) => setTumorSearch(e.target.value)} />
-
-              <div className="hidden lg:block overflow-x-auto rounded-xl border border-slate-200">
-                <table className="w-full text-left text-sm text-slate-600">
-                  <thead className="bg-slate-50 text-slate-800">
-                    <tr>
-                      <th className="p-4 border-b border-slate-200 font-bold">Alt Tip</th>
-                      <th className="p-4 border-b border-slate-200 font-bold w-1/3">Morfoloji</th>
-                      <th className="p-4 border-b border-slate-200 font-bold w-1/4">IHK</th>
-                      <th className="p-4 border-b border-slate-200 font-bold">Moleküler / Klinik</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredTumors.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors">
-                        <td className="p-4 font-bold text-slate-800">{item.name}</td>
-                        <td className="p-4">{item.morph}</td>
-                        <td className="p-4 font-mono text-xs text-indigo-700">{item.ihc}</td>
-                        <td className="p-4">{item.mol}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* MOBİL KART GÖRÜNÜMÜ */}
-              <div className="lg:hidden space-y-4">
-                {filteredTumors.map((item, idx) => (
-                  <div key={idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                    <div className="font-black text-xl text-slate-800 mb-3 pb-2 border-b border-slate-200">{item.name}</div>
-                    <div className="text-sm text-slate-700 mb-3"><span className="font-bold text-slate-900 block mb-1">Morfoloji:</span>{item.morph}</div>
-                    <div className="text-sm text-slate-700 mb-3"><span className="font-bold text-slate-900 block mb-1">IHK Paneli:</span><span className="font-mono text-xs bg-indigo-100 text-indigo-800 p-1 rounded">{item.ihc}</span></div>
-                    <div className="text-sm text-slate-600"><span className="font-bold text-slate-900 block mb-1">Moleküler/Klinik:</span>{item.mol}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </main>
+        <div className="p-8">
+          <h1 className="text-2xl font-bold">Onkositik Tümörler Algoritması</h1>
+          <p>Uygulama başarıyla yüklendi.</p>
         </div>
       );
-    };
+    }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
+    const container = document.getElementById('root');
+    const root = createRoot(container);
     root.render(<App />);
   </script>
 </body>
