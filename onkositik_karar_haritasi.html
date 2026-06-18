@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onkositik Böbrek Tümörleri — Öğretici Karar Haritası</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #090d15;
+  --surface: #111826;
+  --surface2: #18202e;
+  --surface3: #1e293b;
+  --border: #263044;
+  --border2: #374866;
+  --text: #e2e8f6;
+  --muted: #8898b4;
+  --muted2: #5c6e8a;
+  --accent: #6b8bff;
+  --accent-dim: rgba(107,139,255,.12);
+  --teal: #2dd4bf;
+  --teal-dim: rgba(45,212,191,.11);
+  --ok: #34d399;
+  --ok-dim: rgba(52,211,153,.12);
+  --warn: #fbbf24;
+  --warn-dim: rgba(251,191,36,.12);
+  --danger: #fb7185;
+  --danger-dim: rgba(251,113,133,.12);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,.11);
+  --pos-bg: rgba(120,60,20,.55);
+  --neg-bg: rgba(20,55,130,.55);
+  --focal-bg: rgba(100,80,15,.55);
+  --shadow: 0 20px 60px rgba(0,0,0,.5);
+  --r: 16px;
+  --r-sm: 10px;
+  --sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+html[data-theme="light"] {
+  --bg: #f0f4fb;
+  --surface: #ffffff;
+  --surface2: #f0f5ff;
+  --surface3: #e8eeff;
+  --border: #d0daee;
+  --border2: #a0b0cc;
+  --text: #0f1a2e;
+  --muted: #4a5870;
+  --muted2: #7888a0;
+  --accent: #3050d8;
+  --accent-dim: rgba(48,80,216,.1);
+  --teal: #0e9888;
+  --teal-dim: rgba(14,152,136,.1);
+  --ok: #047857;
+  --ok-dim: rgba(4,120,87,.1);
+  --warn: #b45309;
+  --warn-dim: rgba(180,83,9,.1);
+  --danger: #be123c;
+  --danger-dim: rgba(190,18,60,.1);
+  --purple: #6d28d9;
+  --purple-dim: rgba(109,40,217,.09);
+  --pos-bg: rgba(120,60,20,.18);
+  --neg-bg: rgba(20,55,130,.14);
+  --focal-bg: rgba(100,80,15,.14);
+  --shadow: 0 16px 40px rgba(20,40,80,.12);
+}
+*, *::before, *::after { box-sizing: border-box }
+html, body { height: 100%; margin: 0 }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse 70% 50% at 80% 0%, rgba(107,139,255,.08), transparent),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(45,212,191,.06), transparent),
+    var(--bg);
+}
+button, input, select { font: inherit }
+a { color: inherit }
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 16px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 11px; flex: 1; min-width: 0 }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 11px; flex: 0 0 auto;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  display: grid; place-items: center;
+  font-family: var(--mono); font-weight: 900; font-size: 1.1rem; color: white;
+}
+.brand-text h1 { margin: 0; font-size: .98rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1 }
+.brand-text small { display: block; color: var(--muted); font-size: .72rem; margin-top: 1px }
+.top-actions { display: flex; gap: 7px; flex: 0 0 auto }
+.tbtn {
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); border-radius: 9px; padding: 7px 11px;
+  font-size: .78rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+.tbtn:hover { border-color: var(--accent); color: var(--accent) }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #0d1428 0%, #121f4a 50%, #082028 100%);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 36px 20px 28px; text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(107,139,255,.2), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(45,212,191,.15), transparent 35%);
+}
+.hero-inner { position: relative; max-width: 800px; margin: 0 auto }
+.eyebrow {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--teal); margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.eyebrow::before, .eyebrow::after {
+  content: ''; width: 32px; height: 1px; background: var(--teal); opacity: .5;
+}
+.hero h2 { margin: 0 0 10px; font-size: clamp(1.5rem, 3.5vw, 2.4rem); font-weight: 900; letter-spacing: -.04em; color: white; line-height: 1.1 }
+.hero p { margin: 0 0 18px; color: rgba(255,255,255,.72); font-size: clamp(.88rem, 1.6vw, 1rem); max-width: 640px; margin-inline: auto }
+.hero-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center }
+.hero-chip {
+  border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.07);
+  border-radius: 999px; padding: 5px 11px;
+  font-family: var(--mono); font-size: .72rem; color: rgba(255,255,255,.8);
+}
+
+/* ── MAIN LAYOUT ── */
+.main-wrap { max-width: 1280px; margin: 0 auto; padding: 24px 16px 80px }
+
+/* ── PROGRESS BAR ── */
+.progress-strip {
+  display: flex; align-items: center; gap: 0;
+  border: 1px solid var(--border); border-radius: 14px;
+  overflow: hidden; background: var(--surface);
+  margin-bottom: 20px; box-shadow: var(--shadow);
+}
+.progress-step {
+  flex: 1; padding: 14px 10px; text-align: center;
+  font-size: .75rem; font-weight: 700; color: var(--muted2);
+  border-right: 1px solid var(--border);
+  position: relative; transition: background .25s, color .25s;
+}
+.progress-step:last-child { border-right: 0 }
+.progress-step .ps-num {
+  font-family: var(--mono); font-size: .65rem; font-weight: 900;
+  display: block; margin-bottom: 3px;
+  color: var(--muted2);
+}
+.progress-step.done { background: var(--ok-dim); color: var(--ok) }
+.progress-step.done .ps-num { color: var(--ok) }
+.progress-step.active { background: var(--accent-dim); color: var(--accent) }
+.progress-step.active .ps-num { color: var(--accent) }
+.progress-step.active::after {
+  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 32px; height: 3px; background: var(--accent); border-radius: 2px 2px 0 0;
+}
+@media(max-width: 640px) { .progress-step { font-size: .65rem; padding: 10px 4px } }
+
+/* ── DECK ── */
+.deck-wrap {
+  border: 1px solid var(--border); border-radius: var(--r);
+  background: var(--surface); box-shadow: var(--shadow);
+  overflow: hidden; margin-bottom: 20px;
+}
+.deck-rail-outer { overflow-x: auto; overflow-y: hidden; padding: 18px 18px 14px; scrollbar-width: thin }
+.deck-rail { display: flex; align-items: stretch; gap: 14px; min-width: max-content }
+
+/* Connector */
+.connector { display: flex; align-items: center; padding: 0 2px; color: var(--border2); font-size: 1.3rem; font-weight: 900; align-self: center }
+
+/* Stage Card */
+.stage-card {
+  width: 240px; min-width: 240px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 14px; display: flex; flex-direction: column;
+  overflow: hidden; transition: border-color .2s, box-shadow .2s;
+}
+.stage-card.sc-done { border-color: color-mix(in srgb, var(--ok) 40%, var(--border)) }
+.stage-card.sc-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.stage-card.sc-end {
+  border-color: color-mix(in srgb, var(--teal) 50%, var(--border));
+}
+.sc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px 8px; gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.sc-num {
+  font-family: var(--mono); font-size: .68rem; font-weight: 900;
+  color: var(--accent); background: var(--accent-dim);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+  border-radius: 999px; padding: 3px 8px;
+}
+.sc-state {
+  font-size: .63rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--muted2);
+}
+.sc-done .sc-state { color: var(--ok) }
+.sc-active .sc-state { color: var(--accent) }
+.sc-end .sc-state { color: var(--teal) }
+.sc-title { padding: 0 12px 6px; font-size: .95rem; font-weight: 800; line-height: 1.2; color: var(--text) }
+.sc-note { padding: 0 12px 10px; font-size: .73rem; color: var(--muted); line-height: 1.3 }
+.sc-body { padding: 0 10px 12px; display: flex; flex-direction: column; gap: 7px; flex: 1 }
+
+/* Choice / Visit buttons */
+.choices { display: flex; flex-direction: column; gap: 5px }
+.choice-btn {
+  width: 100%; text-align: left;
+  border: 1.5px solid var(--border); background: var(--surface3);
+  color: var(--text); border-radius: 9px;
+  padding: 7px 9px; font-size: .72rem; font-weight: 700; line-height: 1.25;
+  cursor: pointer; transition: border-color .14s, background .14s;
+}
+.choice-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-dim) }
+.choice-btn:disabled { opacity: .5; cursor: not-allowed }
+.choice-btn.sel { border-color: var(--ok); background: var(--ok-dim); color: var(--text) }
+.choice-btn.visited { border-color: color-mix(in srgb, var(--teal) 50%, var(--border)); background: var(--teal-dim) }
+
+/* Next button */
+.next-btn {
+  margin-top: auto; border: 0;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  color: white; border-radius: 9px; padding: 8px 11px;
+  font-size: .73rem; font-weight: 800; cursor: pointer;
+  transition: opacity .15s;
+}
+.next-btn:disabled { background: var(--border); color: var(--muted2); cursor: not-allowed; opacity: 1 }
+.restart-btn {
+  margin-top: auto; border: 1px solid var(--border); background: var(--surface3);
+  color: var(--teal); border-radius: 9px; padding: 8px 11px;
+  font-size: .73rem; font-weight: 800; cursor: pointer;
+}
+.sel-line {
+  background: var(--ok-dim); border: 1px solid color-mix(in srgb, var(--ok) 35%, var(--border));
+  border-radius: 8px; padding: 7px 9px;
+  font-size: .72rem; font-weight: 700; color: var(--text);
+}
+.auto-line { color: var(--ok); font-size: .8rem; font-weight: 800; padding: 4px 2px }
+
+/* ── INFO PANEL ── */
+.info-panel {
+  border: 1px solid var(--border); border-radius: var(--r);
+  background: var(--surface); box-shadow: var(--shadow);
+}
+.info-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.info-panel-head h2 { margin: 0; font-size: 1rem; font-weight: 800 }
+.info-count {
+  font-family: var(--mono); font-size: .72rem; color: var(--muted);
+}
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px; padding: 16px;
+}
+.info-empty {
+  padding: 36px 20px; text-align: center; color: var(--muted);
+  font-size: .9rem;
+}
+.info-empty span { display: block; font-size: 2rem; margin-bottom: 8px; opacity: .5 }
+
+/* Info Card */
+.icard {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 13px; padding: 13px; display: flex; flex-direction: column; gap: 8px;
+  animation: slideIn .25s ease;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.icard.key { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); background: var(--accent-dim) }
+.icard.danger { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); background: var(--danger-dim) }
+.icard-head { display: flex; align-items: flex-start; gap: 8px }
+.icard-badge {
+  font-family: var(--mono); font-size: .65rem; font-weight: 900;
+  padding: 3px 7px; border-radius: 999px; white-space: nowrap; flex: 0 0 auto;
+  border: 1px solid var(--border);
+}
+.icard-badge.key { background: var(--accent-dim); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 28%, var(--border)) }
+.icard-badge.danger { background: var(--danger-dim); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 28%, var(--border)) }
+.icard-badge.default { background: var(--surface3); color: var(--muted); border-color: var(--border) }
+.icard h3 { margin: 0; font-size: .9rem; font-weight: 800; line-height: 1.2; color: var(--text) }
+.icard-meta { font-size: .76rem; color: var(--muted); line-height: 1.35 }
+.icard-meta b { color: var(--text) }
+.icard ul { margin: 0; padding: 0 0 0 16px }
+.icard li { font-size: .72rem; color: var(--muted); margin: 3px 0; line-height: 1.3 }
+.mk-row { display: flex; gap: 5px; flex-wrap: wrap }
+.mk {
+  display: inline-flex; align-items: center; gap: 3px;
+  border-radius: 999px; padding: 3px 8px;
+  font-family: var(--mono); font-size: .65rem; font-weight: 800; color: white;
+  letter-spacing: .02em;
+}
+.mk.pos { background: var(--pos-bg); border: 1px solid rgba(160,100,40,.5) }
+.mk.neg { background: var(--neg-bg); border: 1px solid rgba(40,80,180,.5) }
+.mk.focal { background: var(--focal-bg); border: 1px solid rgba(130,110,20,.5) }
+.mk.neutral { background: rgba(80,90,110,.5); border: 1px solid rgba(100,110,130,.4) }
+html[data-theme="light"] .mk { color: var(--text) }
+.abbr-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px }
+.abbr-pill {
+  border: 1px solid var(--border); background: var(--surface3);
+  border-radius: 8px; padding: 4px 7px; font-size: .68rem;
+}
+.abbr-pill b { font-family: var(--mono); color: var(--teal) }
+
+/* ── FLOW STATUS ── */
+.flow-status {
+  padding: 10px 18px; border-top: 1px solid var(--border);
+  font-size: .78rem; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.flow-status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+
+/* ── RESPONSIVE ── */
+@media(max-width: 600px) {
+  .topbar { padding: 8px 12px }
+  .brand-text small { display: none }
+  .main-wrap { padding: 14px 10px 60px }
+  .progress-step { display: none }
+  .progress-step.active, .progress-step.done:last-of-type { display: block; flex: unset; width: 100% }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark">O</div>
+    <div class="brand-text">
+      <h1>Onkositik Böbrek Tümörleri</h1>
+      <small>Mahmut Akgül yaklaşımı · WHO 2022 uyumlu · öğretici karar haritası</small>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="themeBtn" class="tbtn" type="button">🌙 Tema</button>
+    <button id="resetBtn" class="tbtn" type="button">↺ Sıfırla</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Sıralı Öğretici Karar Haritası</div>
+    <h2>Onkositik / Eozinofilik Böbrek Tümörü<br>Görünce Ne Yaparsın?</h2>
+    <p>Morfoloji önce; yüksek dereceli alarm → papilla sorgusu → KIT/CK7 matriksi sırasıyla açılır. Her adımda bilgi kartları birikir.</p>
+    <div class="hero-chips">
+      <span class="hero-chip">📐 Morfoloji-öncelikli</span>
+      <span class="hero-chip">🔬 IHK markerları</span>
+      <span class="hero-chip">🧬 Moleküler alarmlar</span>
+      <span class="hero-chip">📝 Rapor dili</span>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+
+  <!-- PROGRESS -->
+  <div class="progress-strip" id="progressStrip">
+    <!-- filled by JS -->
+  </div>
+
+  <!-- DECK -->
+  <div class="deck-wrap">
+    <div class="deck-rail-outer">
+      <div class="deck-rail" id="deckRail"></div>
+    </div>
+    <div class="flow-status">
+      <div class="flow-status-dot" id="statusDot"></div>
+      <span id="flowStatus">Aktif basamak yükleniyor…</span>
+    </div>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="info-panel">
+    <div class="info-panel-head">
+      <h2>📚 Açılan öğretici bilgiler</h2>
+      <div class="info-count" id="infoCount">Seçim yaptıkça kartlar birikir</div>
+    </div>
+    <div id="infoGrid" class="info-grid">
+      <div class="info-empty"><span>🔬</span>Karar adımlarını tamamladıkça burada ayrıntılı bilgi kartları belirecek.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ── DATA ── */
+const INFO = {
+  onko:{cls:'key',t:'Başlangıç Filtresi: Onkositik Özellik',m:'Morfoloji',b:'Eozinofilik granüler sitoplazma, solid/nested/asiner/mikrokistik veya "archipelago" patern başlangıç filtresidir.',bul:['Önce ccRCC, papiller RCC ve AML/PEComa mimiklerini refleks olarak dışla.','Berrak hücreli alan, foamy sitoplazma veya tipik papiller yeniden düzenleme varsa yeniden değerlendir.','Morfoloji önce gelir; IHK hipotezi test eder, hipotez oluşturmaz.']},
+  nuclear:{cls:'key',t:'Karar Noktası: Nükleer/Alarm Özellik',m:'İlk ayrım',b:'Bu noktada iki yol birbirini dışlar. Yüksek alarm işaretlenirse "düşük grade onkositik spektrum" yolu geçici olarak kapatılır.',bul:['Yüksek: belirgin sitolojik atipi, nekroz, artmış mitoz, infiltratif büyüme, desmoplazi.','Düşük: bland/uniform nükleus, uniform onkositik sitoplazma, indolent morfoloji.','Şüphe varsa yüksek alarm lehinе sonra tetkik et.']},
+  high:{cls:'danger',t:'Yüksek Dereceli / Alarm Özellikler',m:'Alarm grubu',b:'Sıradan indolent onkositik spektrumdan çıkılır; agresif veya moleküler tanımlı RCC ve mimikleri düşün.',bul:['ccRCC eozinofilik varyantı, epiteloid AML/PEComa, FH-deficient RCC ilk sıraya girer.','TFEB-amplified RCC ve ALK-rearranged RCC nadir ama önemli.','SMARCB1-deficient RMC özellikle genç hastalarda ve meduller lokalizasyonda.','Papiller RCC onkositik/solid varyantları ve solid papiller karsinom da bu grupta.'],mk:[['PAX8','neutral'],['CAIX?','neutral'],['FH/2SC','focal'],['MiT?','neutral']]},
+  low:{cls:'key',t:'Düşük Nükleer Dereceli Onkositik Grup',m:'İndolent spektrum',b:'Onkositom, eozinofilik chRCC, LOT, EVT, ESC RCC, SDH-deficient RCC ve BHD ilişkili hibrit tümörler bu alanda ayrılır.',bul:['Morfoloji sıraya girer; IHK hipotezi sınar.','KIT/CK7 ekseni pratik ana düğümdür.','Nadir varyantlarda konsültasyon ve/veya moleküler doğrulama düşük eşikle uygulanır.'],mk:[['KIT/CD117','neutral'],['CK7/KRT7','neutral']]},
+  papYes:{t:'Papilla Formasyonu Mevcut',m:'Papiller kol',b:'Belirgin papiller mimari varsa papiller RCC with oncocytic features ve PRNRP (ters polariteli papiller renal neoplazi) öncelik kazanır.',bul:['Ters polarite: apikal nükleus, basal sitoplazma.','Düşük grade papiller yapı + GATA3/CK7 pozitifliği PRNRP lehinedir.','Yüksek grade veya nekroz varsa FH-deficient RCC ve papiller RCC agresif varyantları dışlanmalıdır.'],mk:[['CK7+','pos'],['GATA3+','pos'],['AMACR+','focal']]},
+  papNo:{t:'Papilla Yok veya Belirgin Değil',m:'KIT/CK7 yoluna geç',b:'Papilla belirgin değilse düşük grade onkositik tümörleri ayrıştırmak için KIT/CK7 matriksi ana basamaktır.',bul:['KIT pozitif kol: onkositom, chRCC, EVT.','KIT negatif kol: LOT, ESC RCC, SDH/FH alarmı ve MiT düşünce.','Tek markerla tanı koyma; kombine profil + morfoloji birlikte yorumlanır.']},
+  kitIntro:{cls:'key',t:'KIT / CK7 Matriksi — Ana Eksen',m:'En önemli adım',b:'KIT (CD117) ve CK7 (KRT7) birlikte kullanıldığında pratik karar ağacı netleşir. Her marker tek başına değil kombinasyon önemlidir.',bul:['KIT diffüz+ / CK7 negatif-seyrek → Onkositom lehine.','KIT diffüz+ / CK7 diffüz+ → Eozinofilik chRCC lehine.','KIT negatif / CK7 diffüz+ → LOT lehine.','KIT+ / CK7 seyrek + vakuol → EVT düşün.','KIT negatif / CK7 negatif-fokal → İkinci marker paneline geç.'],mk:[['KIT+','pos'],['CK7+','pos'],['KIT−','neg'],['CK7−','neg']]},
+  oncocytoma:{cls:'key',t:'Renal Onkositom',m:'KIT+ / CK7 seyrek',b:'KIT diffüz pozitif, CK7 negatif veya seyrek/fokal ise klasik morfoloji ile birlikte renal onkositom lehinedir.',bul:['İyi sınırlı, nested/tübüler yapı; santral skar görülebilir.','Bland nükleus, "raisinoid" nükleus yok.','Biyopside "renal onkositom favor" veya "low-grade oncocytic neoplasm" dili daha güvenlidir.','mtDNA ve kompleks-I kusurları, 1/Y kaybı veya 11q13/CCND1 değişiklikleri bildirilmiştir.'],mk:[['KIT+','pos'],['CK7 seyrek','focal'],['PAX8+','pos'],['CAIX−','neg']]},
+  chrcc:{t:'Chromophobe RCC — Eozinofilik Varyant',m:'KIT+ / CK7 diffüz',b:'KIT ve CK7 her ikisi diffüz pozitifse eozinofilik chromophobe RCC olasılığı artar.',bul:['Belirgin hücre membranı, perinükleer halo ve raisinoid nükleus destekler.','Dediferansiyasyon veya koagülatif nekroz varsa klinik prognoz olumsuz etkilenir.','Çoklu kromozom kayıpları (1, 2, 6, 10, 13, 17, 21) karakteristiktir.'],mk:[['KIT+','pos'],['CK7+','pos'],['CAIX−','neg'],['PAX8+','pos']]},
+  lot:{cls:'key',t:'LOT — Low-Grade Oncocytic Tumor',m:'KIT− / CK7 diffüz',b:'Diffüz güçlü CK7 pozitifliği ve KIT negatifliği LOT için en öğretici kombinasyondur.',bul:['GATA3 ve L1CAM destekleyici markerlar; tek başına tanısal değil.','MTOR/TSC1/TSC2 yolak değişiklikleri bildirilmiştir.','Mevcut serilerin büyük çoğunluğunda indolent seyir.','FOXI1 negatifliği veya düşük ekspresyonu onkositom/chRCC ile ayrımda yardımcı.'],mk:[['CK7+','pos'],['KIT−','neg'],['GATA3+','pos'],['L1CAM+','pos'],['FOXI1−','neg']]},
+  evt:{t:'EVT — Eosinophilic Vacuolated Tumor',m:'KIT+ / vakuol',b:'Büyük intrastoplazmik vakuoller, Cathepsin K pozitifliği ve TSC/mTOR ilişkisi EVT lehinedir.',bul:['CK7 genellikle seyrek veya fokal.','CD117/KIT ve CD10 ek destek sağlar.','TSC1/TSC2/MTOR mutasyonları; çoğu indolent.','Cathepsin K örtüşmesi EVT ile MiT ailesi ayrımını güçleştirebilir.'],mk:[['CatK+','pos'],['KIT+','pos'],['CK7 seyrek','focal'],['CD10+','pos'],['GPNMB+','pos']]},
+  negativeBranch:{cls:'danger',t:'KIT− / CK7− veya Uyumsuz Profil',m:'İkinci marker gerekli',b:'Bu profil tek başına tanı koydurmaz. SDHB, FH/2SC, CK20/GPNMB, Cathepsin K ve MiT markerları ile ayrım yapılır.',bul:['SDH-deficient ve FH-deficient RCC genetik danışmanlık gerektirebilir.','ESC RCC morfolojisi kaba bazofilik sitoplazmik stippling ile tanınır.','MiT ailesi için IHK şüpheli ise FISH veya RNA-seq onayı zorunlu.'],mk:[['KIT−','neg'],['CK7− / fokal','neg'],['SDHB?','neutral'],['FH/2SC?','neutral']]},
+  sdh:{cls:'danger',t:'SDH-Deficient RCC',m:'SDHB kaybı',b:'SDHB kaybı, iç kontrol uygunsa SDH-deficient RCC lehine güçlü bulgudur.',bul:['Monomorfik onkositik hücreler; mikrokistler, vakuoller/flokkülent inklüzyonlar ve mast hücreleri görülebilir.','KIT çoğu kez negatif; CK7 nadir/fokal.','Germline SDHx değerlendirmesi (özellikle SDHB) önemlidir; metastatik potansiyel mevcuttur.'],mk:[['SDHB kaybı','neg'],['KIT−','neg'],['CK7 fokal/−','focal'],['PAX8+','pos']]},
+  fh:{cls:'danger',t:'FH-Deficient RCC',m:'FH/2SC alarmı',b:'FH kaybı ve/veya 2SC pozitifliği FH-deficient RCC için destekleyicidir; FH korunmuş olsa da güçlü morfoloji tanıyı dışlatmaz.',bul:['Inclusion-benzeri nükleol ve perinükleoler halo uyarıcıdır.','Solid/papiller/kribriform/tübüler veya onkositik alanlar görülebilir.','HLRCC (hereditary leiomyomatosis and renal cell carcinoma) için germline FH değerlendirmesi önerilir.','Agresif klinik davranış; erken metastaz bildirilebilir.'],mk:[['FH kaybı','neg'],['2SC+','pos'],['PAX8+','pos'],['SDHB korunur','pos']]},
+  esc:{t:'ESC RCC — Eosinophilic Solid and Cystic RCC',m:'CK20 / GPNMB',b:'Solid-kistik yapı, hobnail kistler ve kaba bazofilik sitoplazmik stippling ESC RCC için öğreticidir.',bul:['CK20 patchy veya diffüz pozitif olabilir; ESC RCC için en spesifik markerlardan.','CK7 genellikle negatif veya zayıf; Cathepsin K fokal pozitif görülebilir.','TSC1/TSC2 değişiklikleri; genelde düşük evreli, ancak metastatik olgular bildirilmiştir.'],mk:[['CK20+','pos'],['GPNMB+','pos'],['CK7 zayıf/−','neg'],['CatK ±','focal']]},
+  mit:{cls:'danger',t:'MiT Ailesi / TFE3–TFEB Altered RCC',m:'Moleküler doğrulama',b:'TFE3 veya TFEB nükleer pozitifliği şüphe doğurur; IHK heterojen olabilir; FISH veya RNA-füzyon analizi zorunlu.',bul:['Cathepsin K ve melanotik markerlar (HMB45, Melan A) pozitif olabilir.','PAX8 pozitifliği RCC yönünde; PAX8 negatifliği PEComa/AML yönünde yorumlanır.','TFEB-amplified grup daha agresif seyirli olabilir.','TFE3: Xp11.2 rearrangement; TFEB: 6p21 rearrangement veya 6p21 amplifikasyon.'],mk:[['TFE3+','pos'],['TFEB+','pos'],['CatK+','pos'],['HMB45/MelanA+','pos'],['PAX8+','pos']]},
+  pecoma:{cls:'danger',t:'Epiteloid AML / PEComa Mimikleri',m:'PAX8 + melanotik panel',b:'Onkositik/eozinofilik görünümlü epiteloid AML, RCC ile karışabilir; PAX8 ve melanotik markerlar birlikte yorumlanır.',bul:['PAX8 negatifliği PEComa/AML lehine kuvvetle kaydırır.','HMB45 tek başına TFEB-altered RCC ile örtüşebilir; panel değerlendirmesi şart.','TSC1/TSC2 mutasyonları EVT ve ESC RCC ile de örtüşür.'],mk:[['PAX8−','neg'],['HMB45+','pos'],['MelanA+','pos'],['SMA ±','focal']]},
+  prnrp:{t:'PRNRP — Papillary Renal Neoplasm with Reverse Polarity',m:'Ters polarite',b:'Düşük grade papiller yapı ve ters nükleer polarite (apikal nükleus, bazal sitoplazmik balonlaşma) PRNRP için öğreticidir.',bul:['CK7 ve GATA3 pozitifliği destekleyicidir.','KRAS mutasyonu çoğu seride bildirilen moleküler özellik.','İndolent davranış beklenir; ancak uzun takip gerektirir.'],mk:[['CK7+','pos'],['GATA3+','pos'],['AMACR−/fokal','focal']]},
+  papRcc:{t:'Papiller RCC — Onkositik / Eozinofilik Özellikli',m:'Papiller mimik',b:'Papiller mimari belirgin ve nükleer özellikler uyumluysa papiller RCC varyantları ayırıcı tanıya girer.',bul:['Solid veya papiller büyüme, eozinofilik sitoplazma.','AMACR (RACEMAZ) pozitifliği papiller RCC lehinedir.','Yüksek grade veya nekroz varsa FH-deficient RCC akılda tutulmalıdır.'],mk:[['CK7+','pos'],['AMACR+','pos'],['SDHB korunur','pos']]},
+  bhd:{t:'HOCT / BHD İlişkili Hibrit Onkositik/Chromophobe Tümör',m:'FLCN / BHD',b:'Onkositom ve chRCC arasında hibrit/checkerboard görünüm varsa Birt-Hogg-Dubé ilişkisi düşünülmelidir.',bul:['Multifokal ve/veya bilateral tümörler sendromik uyarıdır.','CK7 ve KIT değişken, karışık patern görülür.','FLCN geni (17p11.2); germline değerlendirme ve aile taraması önemlidir.'],mk:[['KIT değişken','focal'],['CK7 değişken','focal'],['PAX8+','pos']]},
+  report:{cls:'key',t:'Güvenli Rapor Dili',m:'Raporlama stratejisi',b:'Rezeksiyonda tipik morfoloji + uyumlu IHK çoğu olguda yeterlidir. Biyopside temkinli dil tercih edilir.',bul:['Rezeksiyon: "Renal onkositom ile uyumlu / LOT ile uyumlu."','Biyopsi: "Low-grade oncocytic renal neoplasm, renal oncocytoma favor; korelasyon önerilir."','FH/SDH şüphesi: klinik genetik danışmanlık ve germline değerlendirme mutlaka not edilir.','Tek antikorla kesin tanıdan kaçın. Morfoloji → sınırlı IHK → gerektiğinde moleküler doğrulama sırası korunur.']},
+  abbr:{t:'Hızlı Kısaltma Sözlüğü',m:'Referans',b:'Sık kullanılan kısaltmalar.',abbr:[['RCC','Renal hücreli karsinom'],['chRCC','Chromophobe RCC'],['LOT','Low-grade oncocytic tumor'],['EVT','Eosinophilic vacuolated tumor'],['ESC RCC','Eosinophilic solid and cystic RCC'],['HOCT','Hybrid oncocytic/chromophobe tumor'],['PRNRP','Papillary renal neoplasm with reverse polarity'],['IHK','İmmünohistokimya'],['KIT','CD117, tyrosine kinase receptor'],['CK7','Cytokeratin 7 / KRT7'],['FH','Fumarate hydratase'],['2SC','S-(2-succino)-cysteine'],['SDHB','Succinate dehydrogenase B'],['BHD/FLCN','Birt-Hogg-Dubé / folliculin'],['MiT','Microphthalmia transcription factor ailesi (TFE3, TFEB)']]}
+};
+
+const STAGES = {
+  onko:{title:'Onkositik Özellik',note:'Başlangıç filtresi otomatik kabul edildi.',kind:'auto',info:['onko'],autoText:'✓ Onkositik/eozinofilik morfoloji doğrulandı'},
+  nuclear:{title:'Nükleer / Alarm Değerlendirme',note:'Yüksek dereceli alarm bulgusu var mı?',kind:'choice',info:['nuclear'],choices:[
+    {key:'high',label:'⚠️ Yüksek nükleer dereceli / alarm özellik',next:'highReview',info:['high']},
+    {key:'low',label:'✓ Düşük nükleer dereceli onkositik grup',next:'papilla',info:['low']}
+  ]},
+  highReview:{title:'Yüksek Dereceli Alarm Ayırıcıları',note:'En az bir tümörü aç, sonra rapor diline geç.',kind:'visit',minVisit:1,next:'reportHigh',visit:[
+    {key:'fh',label:'FH-deficient RCC',info:['fh']},
+    {key:'mit',label:'TFE3 / TFEB — MiT ailesi RCC',info:['mit']},
+    {key:'pecoma',label:'Epiteloid AML / PEComa mimiki',info:['pecoma']},
+    {key:'papRcc',label:'ccRCC / Papiller RCC onkositik mimikleri',info:['papRcc']}
+  ],nextLabel:'Rapor diline geç →'},
+  papilla:{title:'Papilla Formasyonu',note:'Belirgin papiller mimari var mı?',kind:'choice',choices:[
+    {key:'papYes',label:'📋 Papilla formasyonu var',next:'papillaryReview',info:['papYes']},
+    {key:'papNo',label:'— Papilla yok / belirgin değil',next:'kitMatrix',info:['papNo','kitIntro']}
+  ]},
+  papillaryReview:{title:'Papiller Kol',note:'Papiller tümörleri aç, sonra rapor diline geç.',kind:'visit',minVisit:1,next:'reportPap',visit:[
+    {key:'prnrp',label:'PRNRP — ters polariteli papiller neoplazi',info:['prnrp']},
+    {key:'papRcc',label:'Papiller RCC onkositik varyantı',info:['papRcc']},
+    {key:'fh',label:'FH-deficient RCC alarmını kontrol et',info:['fh']}
+  ],nextLabel:'Rapor diline geç →'},
+  kitMatrix:{title:'KIT / CK7 Matriksi',note:'Kombinasyona göre bir profil seç.',kind:'choice',choices:[
+    {key:'oncocytoma',label:'KIT+ · CK7 seyrek-fokal → Onkositom',next:'oncocytomaNext',info:['oncocytoma']},
+    {key:'chrcc',label:'KIT+ · CK7 diffüz → Eozinofilik chRCC',next:'chrccNext',info:['chrcc']},
+    {key:'lot',label:'KIT− · CK7 diffüz → LOT',next:'lotNext',info:['lot']},
+    {key:'evt',label:'KIT+ · CK7 seyrek + vakuol → EVT',next:'evtNext',info:['evt']},
+    {key:'negative',label:'KIT− veya uyumsuz · CK7−/fokal → İkinci marker',next:'secondMarkers',info:['negativeBranch']}
+  ]},
+  oncocytomaNext:{title:'Onkositom — Benzerlikleri Dışla',note:'İsteğe bağlı ziyaret et, sonra rapor diline geç.',kind:'visit',minVisit:0,next:'reportLow',visit:[
+    {key:'bhd',label:'HOCT / BHD benzerliğini incele',info:['bhd']},
+    {key:'chrcc',label:'Eozinofilik chRCC farkını incele',info:['chrcc']}
+  ],nextLabel:'Rapor diline geç →'},
+  chrccNext:{title:'chRCC — Morfoloji ve Patern Doğrula',note:'İsteğe bağlı ziyaret et, sonra rapor diline geç.',kind:'visit',minVisit:0,next:'reportLow',visit:[
+    {key:'oncocytoma',label:'Onkositom farkını incele',info:['oncocytoma']},
+    {key:'bhd',label:'HOCT / BHD benzerliğini incele',info:['bhd']}
+  ],nextLabel:'Rapor diline geç →'},
+  lotNext:{title:'LOT — Destekleyiciler',note:'İsteğe bağlı ziyaret et, sonra rapor diline geç.',kind:'visit',minVisit:0,next:'reportLow',visit:[
+    {key:'sdh',label:'SDH ayırıcı tanısını incele',info:['sdh']},
+    {key:'evt',label:'EVT farkını incele',info:['evt']}
+  ],nextLabel:'Rapor diline geç →'},
+  evtNext:{title:'EVT — Örtüşme Kontrolleri',note:'İsteğe bağlı ziyaret et, sonra rapor diline geç.',kind:'visit',minVisit:0,next:'reportLow',visit:[
+    {key:'esc',label:'ESC RCC farkını incele',info:['esc']},
+    {key:'mit',label:'MiT / Cathepsin K örtüşmesini incele',info:['mit']}
+  ],nextLabel:'Rapor diline geç →'},
+  secondMarkers:{title:'İkinci Marker Paneli',note:'En az birini aç, sonra rapor diline geç.',kind:'visit',minVisit:1,next:'reportLow',visit:[
+    {key:'sdh',label:'SDHB kaybı → SDH-deficient RCC',info:['sdh']},
+    {key:'fh',label:'FH kaybı / 2SC+ → FH-deficient RCC',info:['fh']},
+    {key:'esc',label:'CK20/GPNMB+ → ESC RCC',info:['esc']},
+    {key:'mit',label:'TFE3/TFEB/CatK+ → MiT ailesi',info:['mit']},
+    {key:'pecoma',label:'PAX8− melanotik → PEComa/AML',info:['pecoma']}
+  ],nextLabel:'Rapor diline geç →'},
+  reportLow:{title:'Rapor Dili',note:'Düşük nükleer dereceli grup için güvenli raporlama.',kind:'end',info:['report','abbr']},
+  reportHigh:{title:'Rapor Dili',note:'Yüksek alarm bulgulu olguda doğrulama eşiği düşürülür.',kind:'end',info:['report','abbr']},
+  reportPap:{title:'Rapor Dili',note:'Papiller mimarili onkositik olguda papiller/moleküler not eklenir.',kind:'end',info:['report','abbr']}
+};
+
+// Progress label map
+const PROGRESS_STEPS = [
+  {id:'onko', label:'Onkositik?'},
+  {id:'nuclear', label:'Alarm?'},
+  {id:'papilla', label:'Papilla?'},
+  {id:'kitMatrix', label:'KIT/CK7'},
+  {id:'reportLow', label:'Rapor'}
+];
+
+/* ── STATE ── */
+let state;
+function freshState(){
+  return {opened:['onko','nuclear'],active:'nuclear',choices:{},visited:{},infoOrder:[]};
+}
+
+/* ── DOM ── */
+const deckRail = document.getElementById('deckRail');
+const infoGrid = document.getElementById('infoGrid');
+const infoCount = document.getElementById('infoCount');
+const flowStatus = document.getElementById('flowStatus');
+const progressStrip = document.getElementById('progressStrip');
+
+/* ── HELPERS ── */
+function esc(v){ return String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]) }
+function escA(v){ return esc(v).replace(/'/g,'&#39;') }
+
+function addInfo(ids){
+  const list = Array.isArray(ids)?ids:[ids];
+  list.forEach(id=>{
+    if(!id||!INFO[id]) return;
+    if(!state.infoOrder.includes(id)) state.infoOrder.push(id);
+  });
+}
+
+/* ── ACTIONS ── */
+function choose(stageId, key){
+  const stage=STAGES[stageId];
+  if(!stage||stage.kind!=='choice'||state.active!==stageId||state.choices[stageId]) return;
+  const choice=stage.choices.find(c=>c.key===key);
+  if(!choice||!STAGES[choice.next]) return;
+  state.choices[stageId]=key;
+  addInfo(choice.info);
+  openNext(choice.next);
+}
+
+function visit(stageId, key){
+  const stage=STAGES[stageId];
+  if(!stage||stage.kind!=='visit'||state.active!==stageId) return;
+  const item=stage.visit.find(v=>v.key===key);
+  if(!item) return;
+  if(!state.visited[stageId]) state.visited[stageId]=[];
+  if(!state.visited[stageId].includes(key)) state.visited[stageId].push(key);
+  addInfo(item.info);
+  render();
+}
+
+function nextStage(stageId){
+  const stage=STAGES[stageId];
+  if(!stage||stage.kind!=='visit'||state.active!==stageId||!STAGES[stage.next]) return;
+  const visited=(state.visited[stageId]||[]).length;
+  const min=Number.isFinite(stage.minVisit)?stage.minVisit:0;
+  if(visited<min) return;
+  openNext(stage.next);
+}
+
+function openNext(nextId){
+  if(!STAGES[nextId]) return;
+  if(!state.opened.includes(nextId)) state.opened.push(nextId);
+  state.active=nextId;
+  const s=STAGES[nextId];
+  if(Array.isArray(s.info)) addInfo(s.info);
+  render();
+  requestAnimationFrame(()=>{
+    const el=deckRail.querySelector('[data-sc="'+CSS.escape(nextId)+'"]');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  });
+}
+
+function reset(){
+  state=freshState();
+  addInfo(STAGES.onko.info);
+  addInfo(STAGES.nuclear.info);
+  render();
+}
+
+/* ── RENDER ── */
+function mkHtml(markers){
+  if(!Array.isArray(markers)||!markers.length) return '';
+  return '<div class="mk-row">'+markers.map(([k,cls])=>'<span class="mk '+cls+'">'+esc(k)+'</span>').join('')+'</div>';
+}
+function abbrHtml(list){
+  if(!Array.isArray(list)||!list.length) return '';
+  return '<div class="abbr-row">'+list.map(([k,v])=>'<span class="abbr-pill"><b>'+esc(k)+'</b> '+esc(v)+'</span>').join('')+'</div>';
+}
+function infoCardHtml(id){
+  const it=INFO[id];
+  if(!it) return '';
+  const cls=it.cls||'default';
+  const bullets=Array.isArray(it.bul)?'<ul>'+it.bul.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'';
+  const meta=it.m?'<div class="icard-meta"><b>'+esc(it.m)+'</b> — '+esc(it.b||'')+'</div>':'<div class="icard-meta">'+esc(it.b||'')+'</div>';
+  return '<div class="icard '+cls+'"><div class="icard-head"><span class="icard-badge '+cls+'">'+esc(it.m||'—')+'</span></div><h3>'+esc(it.t)+'</h3>'+meta+mkHtml(it.mk)+bullets+abbrHtml(it.abbr)+'</div>';
+}
+
+function stageCardHtml(id,index){
+  const stage=STAGES[id];
+  if(!stage) return '';
+  const isActive=id===state.active;
+  const selected=state.choices[id];
+  let scClass='stage-card';
+  if(isActive) scClass+=' sc-active';
+  else if(stage.kind==='end'&&state.opened.includes(id)) scClass+=' sc-end';
+  else scClass+=' sc-done';
+
+  const stateLabel=isActive?(stage.kind==='end'?'SON':'AKTİF'):(stage.kind==='auto'?'OTOMATİK':'TAMAM');
+  let body='<div class="sc-note">'+esc(stage.note||'')+'</div><div class="sc-body">';
+
+  if(stage.kind==='auto'){
+    body+='<div class="auto-line">'+esc(stage.autoText||'Tamamlandı')+'</div>';
+  }
+  if(stage.kind==='choice'){
+    body+='<div class="choices">';
+    stage.choices.forEach(c=>{
+      const isSel=selected===c.key;
+      const disabled=!isActive||!!selected;
+      body+='<button class="choice-btn'+(isSel?' sel':'')+'" type="button" data-action="choose" data-stage="'+escA(id)+'" data-key="'+escA(c.key)+'" '+(disabled?'disabled':'')+'>'+esc(c.label)+'</button>';
+    });
+    body+='</div>';
+    if(selected){
+      const sc=stage.choices.find(c=>c.key===selected);
+      body+='<div class="sel-line">✓ '+esc(sc?sc.label:selected)+'</div>';
+    }
+  }
+  if(stage.kind==='visit'){
+    const vis=state.visited[id]||[];
+    body+='<div class="choices">';
+    stage.visit.forEach(v=>{
+      const isDone=vis.includes(v.key);
+      body+='<button class="choice-btn'+(isDone?' visited':'')+'" type="button" data-action="visit" data-stage="'+escA(id)+'" data-key="'+escA(v.key)+'" '+(!isActive?'disabled':'')+'>'+esc(v.label)+'</button>';
+    });
+    body+='</div>';
+    const min=Number.isFinite(stage.minVisit)?stage.minVisit:0;
+    const canNext=isActive&&vis.length>=min;
+    body+='<button class="next-btn" type="button" data-action="next" data-stage="'+escA(id)+'" '+(!canNext?'disabled':'')+'>'+esc(stage.nextLabel||'Devam et')+'</button>';
+  }
+  if(stage.kind==='end'){
+    body+='<div class="sel-line">Akış tamamlandı. Tekrar başlatabilirsin.</div>';
+    body+='<button class="restart-btn" type="button" data-action="restart">↺ Baştan başla</button>';
+  }
+  body+='</div>';
+
+  return '<article class="'+scClass+'" data-sc="'+escA(id)+'">'+
+    '<div class="sc-header"><span class="sc-num">'+(String(index+1).padStart(2,'0'))+'</span><span class="sc-state">'+stateLabel+'</span></div>'+
+    '<div class="sc-title">'+esc(stage.title)+'</div>'+body+
+    '</article>';
+}
+
+function renderRail(){
+  const parts=[];
+  state.opened.forEach((id,i)=>{
+    if(i>0) parts.push('<div class="connector">›</div>');
+    parts.push(stageCardHtml(id,i));
+  });
+  deckRail.innerHTML=parts.join('');
+}
+
+function renderInfo(){
+  if(!state.infoOrder.length){
+    infoGrid.innerHTML='<div class="info-empty"><span>🔬</span>Karar adımlarını tamamladıkça burada ayrıntılı bilgi kartları belirecek.</div>';
+    infoCount.textContent='Henüz kart yok';
+    return;
+  }
+  infoGrid.innerHTML=state.infoOrder.map(infoCardHtml).join('');
+  infoCount.textContent=state.infoOrder.length+' bilgi kartı açık';
+}
+
+function renderProgress(){
+  const openedSet=new Set(state.opened);
+  const activeIdx=state.opened.indexOf(state.active);
+  const html=PROGRESS_STEPS.map(ps=>{
+    const isOpened=openedSet.has(ps.id);
+    const isActive=ps.id===state.active;
+    // also check 'report' family for last step
+    const isReport=ps.id==='reportLow'&&(state.active==='reportLow'||state.active==='reportHigh'||state.active==='reportPap');
+    const cls=isActive||isReport?'active':(isOpened?'done':'');
+    return '<div class="progress-step '+cls+'"><span class="ps-num">'+(PROGRESS_STEPS.indexOf(ps)+1).toString().padStart(2,'0')+'</span>'+esc(ps.label)+'</div>';
+  }).join('');
+  progressStrip.innerHTML=html;
+}
+
+function render(){
+  renderRail();
+  renderInfo();
+  renderProgress();
+  const active=STAGES[state.active];
+  flowStatus.textContent='Aktif basamak: '+(active?active.title:'—');
+}
+
+/* ── EVENTS ── */
+deckRail.addEventListener('click',function(e){
+  const btn=e.target.closest('button[data-action]');
+  if(!btn) return;
+  const {action,stage,key}=btn.dataset;
+  if(action==='choose') choose(stage,key);
+  if(action==='visit') visit(stage,key);
+  if(action==='next') nextStage(stage);
+  if(action==='restart') reset();
+});
+
+document.getElementById('resetBtn').addEventListener('click',reset);
+
+document.getElementById('themeBtn').addEventListener('click',function(){
+  const root=document.documentElement;
+  const next=root.getAttribute('data-theme')==='light'?'dark':'light';
+  root.setAttribute('data-theme',next);
+  this.textContent=(next==='dark'?'🌙 Tema':'☀️ Tema');
+  try{ localStorage.setItem('onkositik-v2-theme',next) }catch(e){}
+});
+
+try{
+  const saved=localStorage.getItem('onkositik-v2-theme');
+  if(saved==='light'||saved==='dark'){
+    document.documentElement.setAttribute('data-theme',saved);
+    document.getElementById('themeBtn').textContent=(saved==='dark'?'🌙 Tema':'☀️ Tema');
+  }
+}catch(e){}
+
+/* ── INIT ── */
+reset();
+})();
+</script>
+</body>
+</html>
